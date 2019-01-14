@@ -86,6 +86,49 @@ ALTER TABLE EmployeesDROP CONSTRAINT PK_Id
 ALTER TABLE EmployeesALTER COLUMN Clients
 DROP DEFAULT
 
+***
+from lab => 
+
+[Id is use to indexeted records and to connect diffrent table => key and foreign key]
+
+CREATE TABLE Clients (
+	Id INT PRIMARY KEY IDENTITY,
+	FirstName NVARCHAR(50) NOT NULL,
+	LastName NVARCHAR(50) NOT NULL
+)
+
+CREATE TABLE AccountTypes (
+	Id INT PRIMARY KEY IDENTITY,
+	[Name] NVARCHAR(50) NOT NULL
+)
+
+[Important: Don’t forget to select the query you want to run before clicking Execute (F5) if you have multiple queries!]
+
+CREATE TABLE Accounts (
+	Id INT PRIMARY KEY IDENTITY,
+	AccountTypeId INT FOREIGN KEY REFERENCES AccountTypes(Id),
+	Balance DECIMAL(15, 2) NOT NULL DEFAULT(0),
+	ClientId INT FOREIGN KEY REFERENCES Clients(Id)
+)
+
+INSERT INTO Clients (FirstName, LastName) VALUES
+('Gosho', 'Ivanov'),
+('Pesho', 'Petrov'),
+('Ivan', 'Iliev'),
+('Merry', 'Ivanova')
+
+INSERT INTO AccountTypes (Name) VALUES
+('Checking'),
+('Savings')
+
+INSERT INTO Accounts (ClientId, AccountTypeId, Balance) VALUES
+(1, 1, 175),
+(2, 1, 275.56),
+(3, 1, 138.01),
+(4, 1, 40.30),
+(4, 2, 375.50)
+
+
 
 
 
