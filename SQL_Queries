@@ -1,0 +1,118 @@
+Basic commands/Queries
+
+CREATE DATABASE Employees
+*******
+
+CREATE TABLE People
+(
+  Id int NOT NULL,
+  Email varchar(50) NOT NULL,
+  FirstName varchar(50),
+  LastName varchar(50)
+)
+
+***
+SELECT * FROM Employees
+
+SELECT TOP (5) FirstName, LastName
+FROM Employees
+***
+PROPERTIES
+
+Primary Key
+
+Id INT NOT NULL PRIMARY KEY
+
+Identity (auto-increment)
+
+Id INT NOT NULL PRIMARY KEY
+
+Unique constraint – no repeating values in entire table
+Email VARCHAR(50) UNIQUE
+***
+Default value – if not specified (otherwise set to NULL)
+
+Balance DECIMAL(10,2) DEFAULT 0
+
+Value constraint
+
+Kelvin DECIMAL(10,2) CHECK (Kelvin > 0)
+***
+Changed table =>
+
+ALTER TABLE Employees
+
+ALTER TABLE Employees
+ADD Salary DECIMAL(15, 2)
+
+Delete
+ALTER TABLE People
+DROP COLUMN FullName
+
+Modify data type of existing column
+ALTER TABLE PeopleALTER COLUMN Email VARCHAR(100)
+
+***
+Add primary key to existing column
+ALTER TABLE PeopleADD CONSTRAINT PK_Id
+PRIMARY KEY (Id)
+
+Add unique constraint
+ALTER TABLE PeopleADD CONSTRAINT uq_Email
+UNIQUE (Email)
+
+ALTER TABLE PeopleADD DEFAULT 0
+FOR Balance
+
+ALTER TABLE InstrumentReadingsADD CONSTRAINT PositiveValue
+CHECK (Kelvin > 0)
+
+***
+Deleting Data and Structures
+
+Dell all records from table
+TRUNCATE TABLE Employees
+
+Dell all records from table + structure
+DROP TABLE Employees
+
+Drop entıre database
+DROP DATABASE AMS
+
+
+ALTER TABLE EmployeesDROP CONSTRAINT PK_Id
+ALTER TABLE EmployeesALTER COLUMN Clients
+DROP DEFAULT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
