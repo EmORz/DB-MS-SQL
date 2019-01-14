@@ -1,5 +1,5 @@
 Basic commands/Queries
-
+dbo...... 
 with [....] escaped special words
 
 CREATE DATABASE Employees
