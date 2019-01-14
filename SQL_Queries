@@ -1,5 +1,7 @@
 Basic commands/Queries
 
+with [....] escaped special words
+
 CREATE DATABASE Employees
 *******
 
