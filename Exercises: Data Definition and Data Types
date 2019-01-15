@@ -67,3 +67,22 @@ INSERT INTO People([Name], Gender, Birthdate) VALUES
 ('FORTH NAME', 'F', '02-02-2022'),
 ('FIFTH NAME', 'M', '04-03-2025')
 ***
+CREATE TABLE Users(
+	  Id INT UNIQUE NOT NULL IDENTITY,
+	  Username NVARCHAR(30) UNIQUE NOT NULL,
+	  [Password] NVARCHAR(26) NOT NULL,
+	  ProfilePicture VARBINARY(MAX),
+	  LastLoginTime  DATETIME2,
+	  IsDeleted BIT NOT NULL DEFAULT(0)
+)
+
+
+ALTER TABLE Users
+ADD PRIMARY KEY (Id)
+
+INSERT INTO Users(Username, [Password]) VALUES
+('FIRST NAME', '123'),
+('SECOND NAME', '213'),
+('THIRD NAME', '852'),
+('FORTH NAME', '459'),
+('FIFTH NAME', '753')
