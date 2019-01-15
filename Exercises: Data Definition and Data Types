@@ -36,3 +36,10 @@ INSERT INTO Minions(Id, [Name], Age, TownId) VALUES
 (3, 'Steward', NULL, 2)
 
 SELECT * FROM Minions
+
+
+TRUNCATE TABLE Minions;
+
+DROP TABLE Minions;
+
+DROP TABLE Towns;
