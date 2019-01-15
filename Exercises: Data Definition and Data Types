@@ -43,3 +43,27 @@ TRUNCATE TABLE Minions;
 DROP TABLE Minions;
 
 DROP TABLE Towns;
+***
+CREATE TABLE People(
+   
+   Id INT UNIQUE NOT NULL IDENTITY,
+   [Name] NVARCHAR(200) NOT NULL,
+   Picture VARBINARY(MAX),
+   Height NUMERIC(3, 2),
+   [Weight] Numeric(5, 2),
+   Gender CHAR(1) CHECK([Gender] IN('M', 'F')) NOT NULL,
+   Birthdate DATE NOT NULL,
+   Biography NVARCHAR(MAX)
+)
+
+ALTER TABLE People
+ADD PRIMARY KEY (Id)
+
+
+INSERT INTO People([Name], Gender, Birthdate) VALUES
+('FIRST NAME', 'M', '01-01-2000'),
+('SECOND NAME', 'F', '02-01-2001'),
+('THIRD NAME', 'M', '01-02-2002'),
+('FORTH NAME', 'F', '02-02-2022'),
+('FIFTH NAME', 'M', '04-03-2025')
+***
