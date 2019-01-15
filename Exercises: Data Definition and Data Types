@@ -9,30 +9,30 @@ Use Minions;
 
 
 CREATE TABLE Minions (
-	Id INT PRIMARY KEY IDENTITY,
+	Id INT PRIMARY KEY NOT NULL,
 	[Name] NVARCHAR(50) NOT NULL,
 	Age INT 
 )
 
 CREATE TABLE Towns (
-	Id INT PRIMARY KEY IDENTITY,
+	Id INT PRIMARY KEY NOT NULL,
 	[Name] NVARCHAR(50) NOT NULL,
 )
 
 ALTER TABLE Minions
-ADD TownId INT FOREIGN KEY REFERENCES Towns(Id)
+ADD TownId INT FOREIGN KEY REFERENCES Towns(Id) NOT NULL;
 --Change the structure of the Minions table to have new column TownId that would be of the same type as the Id column of Towns table. 
 --Add new constraint that makes TownId foreign key and references to Id column of Towns table.
 
-INSERT INTO Towns([Name]) VALUES
-('Sofia'),
-('Plovdiv'),
-('Varna')
+INSERT INTO Towns(Id, [Name]) VALUES
+(1,'Sofia'),
+(2, 'Plovdiv'),
+(3, 'Varna')
 
 
-INSERT INTO Minions([Name], Age, TownId) VALUES
-('Kevin', 22, 1),
-('Bob', 15, 3),
-('Steward', NULL, 2)
+INSERT INTO Minions(Id, [Name], Age, TownId) VALUES
+(1, 'Kevin', 22, 1),
+(2, 'Bob', 15, 3),
+(3, 'Steward', NULL, 2)
 
 SELECT * FROM Minions
