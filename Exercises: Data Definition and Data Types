@@ -201,3 +201,32 @@ VALUES
 (3, 'Title THREE', 1, 2, 3),
 (4, 'Title FOUR', 5, 1, 3),
 (5, 'Title FIVE', 3, 5, 2)
+***
+--Using SQL queries create CarRental database with the following entities:
+CREATE DATABASE CarRental
+
+--Using SQL queries create CarRental database with the following entities:
+--Cars (Id, PlateNumber, Manufacturer, Model, CarYear, CategoryId, Doors, Picture, Condition, Available)
+--Employees (Id, FirstName, LastName, Title, Notes)
+--Customers (Id, DriverLicenceNumber, FullName, Address, City, ZIPCode, Notes)
+--RentalOrders (Id, EmployeeId, CustomerId, CarId, TankLevel, KilometrageStart, 
+--KilometrageEnd, TotalKilometrage, StartDate, EndDate, TotalDays, RateApplied, 
+--TaxRate, OrderStatus, Notes)
+USE CarRental
+
+CREATE TABLE Categories(
+	Id INT PRIMARY KEY NOT NULL,
+	CategoryName NVARCHAR(50) NOT NULL,
+	DailyRate DECIMAL(10, 2) NOT NULL,
+	WeeklyRate DECIMAL(10, 2) NOT NULL,
+	MonthlyRate DECIMAL(10, 2) NOT NULL,
+	WeekendRate DECIMAL(10, 2) NOT NULL
+)
+
+INSERT INTO Categories(Id, CategoryName, DailyRate, WeeklyRate, MonthlyRate,WeekendRate)
+VALUES
+(1, 'FIRST CATEGORY', 10, 50, 200, 50 ),
+(2, 'SECOND CATEGORY', 20, 90, 330, 100 ),
+(3, 'THIRD CATEGORY', 30, 130, 2700, 155 )
+
+
