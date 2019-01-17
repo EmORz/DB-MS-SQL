@@ -1,0 +1,569 @@
+04. Insert Records in Both Tables 
+INSERT INTO Towns(Id, [Name]) VALUES
+(1,'Sofia'),
+(2, 'Plovdiv'),
+(3, 'Varna')
+
+
+INSERT INTO Minions(Id, [Name], Age, TownId) VALUES
+(1, 'Kevin', 22, 1),
+(2, 'Bob', 15, 3),
+(3, 'Steward', NULL, 2)
+
+07. Create Table People 
+CREATE TABLE People(
+   
+   Id INT UNIQUE NOT NULL IDENTITY,
+   [Name] NVARCHAR(200) NOT NULL,
+   Picture VARBINARY(MAX),
+   Height NUMERIC(3, 2),
+   [Weight] Numeric(5, 2),
+   Gender CHAR(1) CHECK([Gender] IN('M', 'F')) NOT NULL,
+   Birthdate DATE NOT NULL,
+   Biography NVARCHAR(MAX)
+)
+
+ALTER TABLE People
+ADD PRIMARY KEY (Id)
+
+
+INSERT INTO People([Name], Gender, Birthdate) VALUES
+('FIRST NAME', 'M', '01-01-2000'),
+('SECOND NAME', 'F', '02-01-2001'),
+('THIRD NAME', 'M', '01-02-2002'),
+('FORTH NAME', 'F', '02-02-2022'),
+('FIFTH NAME', 'M', '04-03-2025')
+
+08. Create Table Users 
+CREATE TABLE Users(
+	  Id INT UNIQUE NOT NULL IDENTITY,
+	  Username NVARCHAR(30) UNIQUE NOT NULL,
+	  [Password] NVARCHAR(26) NOT NULL,
+	  ProfilePicture VARBINARY(MAX),
+	  LastLoginTime  DATETIME2,
+	  IsDeleted BIT NOT NULL DEFAULT(0)
+)
+
+
+ALTER TABLE Users
+ADD PRIMARY KEY (Id)
+
+INSERT INTO Users(Username, [Password]) VALUES
+('FIRST NAME', '123'),
+('SECOND NAME', '213'),
+('THIRD NAME', '852'),
+('FORTH NAME', '459'),
+('FIFTH NAME', '753')
+
+13. Movies Database 
+CREATE TABLE Directors(
+	Id INT PRIMARY KEY NOT NULL,
+	DirectorName NVARCHAR(50) NOT NULL,
+	Notes NVARCHAR(MAX)
+)
+INSERT INTO Directors(Id, DirectorName)
+VALUES
+(1, 'DIRECTOR ONE'),
+(2, 'DIRECTOR TWO'),
+(3, 'DIRECTOR THREE'),
+(4, 'DIRECTOR FOUR'),
+(5, 'DIRECTOR FIVE')
+CREATE TABLE Genres(
+	Id INT PRIMARY KEY NOT NULL,
+	GenreName NVARCHAR(50) NOT NULL,
+	Notes NVARCHAR(MAX)
+)
+INSERT INTO Genres(Id, GenreName)
+VALUES
+(1, 'GENRE ONE'),
+(2, 'GENRE TWO'),
+(3, 'GENRE THREE'),
+(4, 'GENRE FOUR'),
+(5, 'GENRE FIVE')
+CREATE TABLE Categories(
+	Id INT PRIMARY KEY NOT NULL,
+	CategoryName NVARCHAR(50) NOT NULL,
+	Notes NVARCHAR(MAX)
+)
+INSERT INTO Categories(Id, CategoryName)
+VALUES
+(1, 'CATEGORIES ONE'),
+(2, 'CATEGORIES TWO'),
+(3, 'CATEGORIES THREE'),
+(4, 'CATEGORIES FOUR'),
+(5, 'CATEGORIES FIVE')
+CREATE TABLE Movies(
+	Id INT PRIMARY KEY NOT NULL,
+	Title NVARCHAR(255) NOT NULL,
+	DirectorId INT FOREIGN KEY REFERENCES Directors(Id),
+	CopyrightYear INT,
+	Lenght NVARCHAR(50),
+	GenreId INT FOREIGN KEY REFERENCES Genres(Id),
+	CategoryId INT FOREIGN KEY REFERENCES Categories(Id),
+	Rating INT,
+	Notes NVARCHAR(MAX)
+)
+INSERT INTO Movies(Id, Title, DirectorId, GenreId, CategoryId)
+VALUES
+(1, 'Title ONE', 2, 3, 4),
+(2, 'Title TWO', 3, 4, 5),
+(3, 'Title THREE', 1, 2, 3),
+(4, 'Title FOUR', 5, 1, 3),
+(5, 'Title FIVE', 3, 5, 2)
+
+14. Car Rental Database 
+CREATE TABLE Categories(
+Id INT PRIMARY KEY NOT NULL,
+CategoryName NVARCHAR(50) NOT NULL,
+DailyRate DECIMAL(15, 2),
+WeeklyRate DECIMAL(15, 2),
+MonthlyRate DECIMAL(15, 2),
+WeekendRate DECIMAL(15, 2)
+
+)
+
+ALTER TABLE Categories
+ADD CONSTRAINT CK_AtLeastOneRate CHECK(
+(DailyRate IS NOT NULL)
+OR (WeeklyRate IS NOT NULL) 
+OR (MonthlyRate IS NOT NULL)
+OR (WeekendRate IS NOT NULL))
+
+INSERT INTO Categories(Id,
+                       CategoryName,
+                       DailyRate,
+                       WeeklyRate,
+                       MonthlyRate,
+                       WeekendRate
+                      )
+VALUES
+(
+       1,
+       'First Category',
+       10,
+       50,
+       200,
+       50
+),
+(
+       2,
+       'Second Category',
+       20,
+       90,
+       330,
+       100
+),
+(
+       3,
+       'Third Category',
+       30,
+       130,
+       2700,
+       155
+)
+--•	Cars (Id, PlateNumber, Manufacturer, Model, CarYear, CategoryId, Doors, Picture, Condition, Available)
+CREATE TABLE Cars(
+Id INT PRIMARY KEY NOT NULL,
+PlateNumber NVARCHAR(50) NOT NULL,
+Manufacturer NVARCHAR(50) NOT NULL,
+Model NVARCHAR(50) NOT NULL,
+CarYear INT NOT NULL,
+CategoryId INT FOREIGN KEY REFERENCES Categories(Id),
+Doors INT NOT NULL,
+Picture VARBINARY(MAX),
+Condition NVARCHAR(50),
+Available BIT DEFAULT 1
+)
+INSERT INTO Cars(Id,
+                 PlateNumber,
+                 Manufacturer,
+                 Model,
+                 CarYear,
+                 CategoryId,
+                 Doors,
+                 Available
+                )
+VALUES
+(
+       1,
+       'CT7777CB',
+       'BMW',
+       '320',
+       '2002',
+       3,
+       4,
+       1
+),
+(
+       2,
+       'CT7557CB',
+       'BMW',
+       '535',
+       '2009',
+       3,
+       4,
+       1
+),
+(
+       3,
+       'CT7373CB',
+       'BMW',
+       '320',
+       '1989',
+       1,
+       2,
+       1
+)
+
+--•	Employees (Id, FirstName, LastName, Title, Notes)
+CREATE TABLE Employees( 
+Id INT PRIMARY KEY NOT NULL,
+FirstName NVARCHAR(50) NOT NULL,
+LastName NVARCHAR(50) NOT NULL,
+Title NVARCHAR(50) NOT NULL,
+Notes NVARCHAR(MAX)
+)
+INSERT INTO Employees(Id,
+                      FirstName,
+                      LastName,
+                      Title
+                     )
+VALUES
+(
+       1,
+       'First',
+       'One',
+       'Mechanic'
+),
+(
+       2,
+       'Second',
+       'Two',
+       'Team Leader'
+),
+(
+       3,
+       'Third',
+       'Three',
+       'Boss'
+)
+
+--•	Customers (Id, DriverLicenceNumber, FullName, Address, City, ZIPCode, Notes)
+CREATE TABLE Customers( 
+Id INT PRIMARY KEY NOT NULL,
+DriverLicenceNumber VARCHAR(50) UNIQUE NOT NULL,
+FullName NVARCHAR(50) NOT NULL,
+[Address] NVARCHAR(255),
+City NVARCHAR(50),
+ZIPCode NVARCHAR(50),
+Notes NVARCHAR(MAX)
+)
+
+INSERT INTO Customers(Id,
+                      DriverLicenceNumber,
+                      FullName
+                     )
+VALUES
+(
+       1,
+       '123',
+       'First Name'
+),
+(
+       2,
+       '234',
+       'Second Name'
+),
+(
+       3,
+       '345',
+       'Third Name'
+)
+
+--•	RentalOrders (Id, EmployeeId, CustomerId, CarId, TankLevel, KilometrageStart, KilometrageEnd, 
+--TotalKilometrage, StartDate, EndDate, TotalDays, RateApplied, TaxRate, OrderStatus, Notes)
+CREATE TABLE RentalOrders(
+Id INT PRIMARY KEY NOT NULL,
+EmployeeId INT FOREIGN KEY REFERENCES Employees(Id),
+CustomerId INT FOREIGN KEY REFERENCES Customers(Id),
+CarId INT FOREIGN KEY REFERENCES Cars(Id),
+TankLevel NUMERIC(5, 2),
+KilometrageStart INT,
+KilometrageEnd INT,
+TotalKilometrage INT,
+StartDate DATETIME NOT NULL,
+EndDate DATETIME NOT NULL,
+TotalDays INT NOT NULL,
+RateApplied DECIMAL(15, 2),
+TaxRate DECIMAL(15, 2),
+OrderStatus NVARCHAR(50),
+Notes NVARCHAR(MAX)
+)
+ALTER TABLE RentalOrders
+ADD CONSTRAINT CK_TotalDays CHECK(DATEDIFF(DAY, StartDate, EndDate) = TotalDays)
+
+INSERT INTO RentalOrders(Id,
+                         EmployeeId,
+                         CustomerId,
+                         CarId,
+                         StartDate,
+                         EndDate,
+                         TotalDays
+                        )
+VALUES
+(
+       1,
+       3,
+       3,
+       3,
+       '01-01-2010',
+       '01-02-2010',
+       1
+),
+(
+       2,
+       1,
+       1,
+       1,
+       '01-01-2010',
+       '01-03-2010',
+       2
+),
+(
+       3,
+       2,
+       2,
+       2,
+       '01-01-2010',
+       '01-04-2010',
+       3
+)
+
+15. Hotel Database
+CREATE TABLE Employees(
+	Id INT PRIMARY KEY NOT NULL,
+    FirstName NVARCHAR(50) NOT NULL,
+	LastName  NVARCHAR(50) NOT NULL,
+	Title  NVARCHAR(255) NOT NULL,
+	Notes  NVARCHAR(MAX)
+)
+
+INSERT INTO Employees(Id, FirstName, LastName, Title)
+VALUES
+(1, 'Gogo', 'First', 'Manager'),
+(2, 'Gogo', 'Second', 'Manager'),
+(3, 'Gogo', 'Third', 'Manager')
+
+-- Customers (AccountNumber, FirstName, LastName, PhoneNumber, EmergencyName, EmergencyNumber, Notes)
+CREATE TABLE Customers(
+    AccountNumber INT PRIMARY KEY NOT NULL,
+    FirstName NVARCHAR(50) NOT NULL,
+	LastName  NVARCHAR(50) NOT NULL,
+	PhoneNumber VARCHAR(50),
+	EmergencyName NVARCHAR(50) NOT NULL,
+	EmergencyNumber INT NOT NULL,
+	Notes  NVARCHAR(MAX)
+)
+INSERT INTO Customers(AccountNumber, FirstName, LastName, EmergencyName, EmergencyNumber)
+VALUES
+(1, 'First', 'Customers', 'Em1', 111),
+(2, 'Second', 'Customers', 'Em2', 222),
+(3, 'Third', 'Customers', 'Em3', 333)
+
+-- •	RoomStatus (RoomStatus, Notes)
+CREATE TABLE RoomStatus(
+	
+    RoomStatus NVARCHAR(50) PRIMARY KEY NOT NULL,	
+	Notes  NVARCHAR(MAX)
+)
+
+INSERT INTO RoomStatus(RoomStatus)
+VALUES
+('Free'),
+('In USE!'),
+('Reserved')
+
+--•	RoomTypes (RoomType, Notes)
+
+CREATE TABLE RoomTypes(
+	RoomType NVARCHAR(50) PRIMARY KEY NOT NULL,	
+	Notes  NVARCHAR(MAX)
+)
+INSERT INTO RoomTypes(RoomType)
+VALUES
+('Luxory'),
+('Casual'),
+('Misery')
+--•	BedTypes (BedType, Notes)
+CREATE TABLE BedTypes(
+	BedType NVARCHAR(50) PRIMARY KEY NOT NULL,	
+	Notes  NVARCHAR(MAX)
+)
+INSERT INTO BedTypes(BedType)
+VALUES
+('Single'),
+('Double'),
+('King')
+
+--Rooms (RoomNumber, RoomType, BedType, Rate, RoomStatus, Notes)
+CREATE TABLE Rooms(
+	RoomNumber INT PRIMARY KEY NOT NULL,
+	RoomType NVARCHAR(50) NOT NULL,
+	BedType NVARCHAR(50) NOT NULL,
+	Rate DECIMAL(10, 2) NOT NULL,
+	RoomStatus NVARCHAR(50) NOT NULL,
+	Notes  NVARCHAR(MAX)
+)
+INSERT INTO Rooms(RoomNumber, RoomType, BedType, Rate, RoomStatus)
+VALUES
+(1, 'Luxory', 'King', 100, 'Reserved'),
+(2, 'Casual', 'Double', 50, 'In USE!'),
+(3, 'Misery', 'Single', 19, 'Free')
+--•	Payments (Id, EmployeeId, PaymentDate, AccountNumber, FirstDateOccupied, 
+--LastDateOccupied, TotalDays, AmountCharged, TaxRate, TaxAmount, PaymentTotal, Notes)
+CREATE TABLE Payments(
+	Id INT PRIMARY KEY NOT NULL,
+	EmployeeId INT NOT NULL,
+	PaymentDate DATE NOT NULL,
+	AccountNumber INT NOT NULL,
+	FirstDateOccupied DATE NOT NULL,
+	LastDateOccupied DATE NOT NULL,
+	TotalDays INT NOT NULL,
+	AmountCharged DECIMAL(10, 2) NOT NULL,
+	TaxRate DECIMAL(10, 2) NOT NULL,
+	TaxAmount DECIMAL(10, 2) NOT NULL,
+	PaymentTotal DECIMAL(10, 2) NOT NULL,
+	Notes  NVARCHAR(MAX)
+)
+ALTER TABLE Payments
+ADD CONSTRAINT CK_TaxAmount CHECK(TaxAmount = TaxRate * TotalDays )
+
+ALTER TABLE Payments
+ADD CONSTRAINT CK_TotalDays CHECK(DATEDIFF(DAY, FirstDateOccupied, LastDateOccupied) = TotalDays)
+
+INSERT INTO Payments(Id,
+                     EmployeeId,
+                     PaymentDate,
+                     AccountNumber,
+                     FirstDateOccupied,
+                     LastDateOccupied,
+                     TotalDays,
+                     AmountCharged,
+                     TaxRate,
+                     TaxAmount,
+                     PaymentTotal
+                    )
+VALUES
+(
+       1,
+       1,
+       '10-05-2015',
+       1,
+       '10-05-2015',
+       '10-10-2015',
+       5,
+       75,
+       50,
+       250,
+       75
+),
+(
+       2,
+       3,
+       '10-11-2015',
+       1,
+       '12-15-2015',
+       '12-25-2015',
+       10,
+       100,
+       50,
+       500,
+       100
+),
+(
+       3,
+       2,
+       '12-23-2015',
+       1,
+       '12-23-2015',
+       '12-24-2015',
+       1,
+       75,
+       75,
+       75,
+       75
+)
+
+
+--Occupancies (Id, EmployeeId, DateOccupied, AccountNumber, RoomNumber, RateApplied, PhoneCharge, Notes)
+CREATE TABLE Occupancies(
+	Id INT PRIMARY KEY NOT NULL,
+	EmployeeId INT NOT NULL,
+	DateOccupied DATE NOT NULL,
+	AccountNumber INT NOT NULL,
+	RoomNumber INT NOT NULL,
+	RateApplied DECIMAL(10, 2),
+	PhoneCharge VARCHAR(50) NOT NULL,
+	Notes  NVARCHAR(MAX)
+)
+INSERT INTO Occupancies(Id,
+                        EmployeeId,
+                        DateOccupied,
+                        AccountNumber,
+                        RoomNumber,
+                        PhoneCharge
+                       )
+VALUES
+(
+       1,
+       2,
+       '08-24-2012',
+       3,
+       1,
+       '088 88 888 888'
+),
+(
+       2,
+       3,
+       '06-15-2015',
+       2,
+       3,
+       '088 88 555 555'
+),
+(
+       3,
+       1,
+       '05-12-1016',
+       1,
+       2,
+       '088 88 555 333'
+)
+19. Basic Select All Fields 
+  SELECT * FROM Towns
+  SELECT * FROM Departments
+  SELECT * FROM Employees
+20. Basic Select All Fields and Order Them 
+ SELECT * FROM Towns
+  ORDER BY Name
+  SELECT * FROM Departments
+  ORDER BY Name
+  SELECT * FROM Employees
+  ORDER BY Salary DESC
+ 21. Basic Select Some Fields 
+   SELECT Name FROM Towns
+  ORDER BY Name
+  SELECT Name FROM Departments
+  ORDER BY Name
+  SELECT FirstName, LastName, JobTitle, Salary FROM Employees
+  ORDER BY Salary DESC
+ 22. Increase Employees Salary
+  UPDATE Employees
+  SET Salary*=1.1
+  SELECT Salary FROM Employees
+ 23. Decrease Tax Rate 
+  UPDATE Payments
+  SET TaxRate -=TaxRate*0.03
+  SELECT TaxRate FROM Payments 
+  24. Delete All Records 
+  TRUNCATE TABLE Occupancies 
+  
