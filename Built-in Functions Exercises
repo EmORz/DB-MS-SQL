@@ -75,6 +75,20 @@ WHERE LEN(LASTNAME) = 5
    ) Employees  
    WHERE Rank = 2 AND Salary BETWEEN 10000 AND 50000 
    ORDER BY Salary DESC
+   //*  CREATE VIEW V_EmployeeByRank AS
+  SELECT *
+   FROM (
+       SELECT EmployeeID,
+              FirstName,
+              LastName,
+              Salary,
+              DENSE_RANK() OVER(PARTITION BY Salary ORDER BY EmployeeID) AS Rank
+	   FROM Employees AS R  
+   ) Employees  
+   WHERE Rank = 2 AND Salary BETWEEN 10000 AND 50000   
+
+   SELECT * FROM V_EmployeeByRank
+   ORDER BY Salary DESC*//
    
    12. Countries Holding 'A'
    SELECT CountryName,
