@@ -1,3 +1,40 @@
+Lab
+SELECT CustomerID,
+        FirstName,
+		LastName,
+		SUBSTRING(PAYMENTNUMBER,1, 6)+REPLICATE( '*', LEN(PAYMENTNUMBER)-6)
+  FROM Customers
+  
+ CREATE VIEW v_PublicPaymentInfo AS
+ SELECT CustomerID,
+        FirstName,
+		LastName,
+		SUBSTRING(PAYMENTNUMBER,1, 6)+REPLICATE( '*', LEN(PAYMENTNUMBER)-6) AS PaymentNumber
+  FROM Customers AS e
+
+  SELECT * FROM v_PublicPaymentInfo
+  
+    SELECT Id,
+         A*H/2 AS Area
+  FROM Triangles2
+  
+  SELECT Id,
+       SQRT(SQUARE(X1-X2)+SQUARE(Y1-Y2)) AS Lenght
+ FROM Lines
+ 
+  SELECT CEILING(CEILING( CAST(Quantity AS FLOAT)/BoxCapacity)/PalletCapacity) AS [Number of pallets]
+  FROM Products
+  
+  
+
+
+
+
+
+
+
+
+******************************************************************
 01. Find Names of All Employees by First Name 
 SELECT FirstName, LastName
   FROM Employees
