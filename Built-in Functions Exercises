@@ -63,7 +63,18 @@ WHERE LEN(LASTNAME) = 5
    ORDER BY Salary DESC
    
    
-   11. Find All Employees with Rank 2 (not included in final score) - todo!!!
+   11. Find All Employees with Rank 2 (not included in final score)
+   SELECT *
+   FROM (
+       SELECT EmployeeID,
+              FirstName,
+              LastName,
+              Salary,
+              DENSE_RANK() OVER(PARTITION BY Salary ORDER BY EmployeeID) AS Rank
+	   FROM Employees AS R  
+   ) Employees  
+   WHERE Rank = 2 AND Salary BETWEEN 10000 AND 50000 
+   ORDER BY Salary DESC
    
    12. Countries Holding 'A'
    SELECT CountryName,
