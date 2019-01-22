@@ -17,6 +17,11 @@ SELECT CustomerID,
     SELECT Id,
          A*H/2 AS Area
   FROM Triangles2
+    SELECT Id,
+           A,
+	   H,
+           CONCAT(' => ', A*H/2) AS Area
+   FROM Triangles2
   
   SELECT Id,
        SQRT(SQUARE(X1-X2)+SQUARE(Y1-Y2)) AS Lenght
@@ -26,7 +31,27 @@ SELECT CustomerID,
   FROM Products
   
   
-
+  SELECT Id,
+         ProductName,
+		 DATEPART(QUARTER, OrderDate) AS [Quarter],
+		 DATEPART(MONTH, OrderDate) AS [Month],
+		 DATEPART(YEAR, OrderDate) AS [Year]
+   FROM Orders
+   
+--Show employee experience
+--HIREDATE
+SELECT EmployeeID,
+       FirstName,
+       LastName,
+       DATEDIFF(YEAR, HireDate, '2017/01/25') AS [Years In Service]
+ FROM Employees
+ ORDER BY FirstName
+ 
+-- CAST(Data AS NewType)
+SELECT ProjectID,
+       Name,
+	   ISNULL(CAST(EndDate AS varchar), 'Not Finished')
+ FROM Projects
 
 
 
