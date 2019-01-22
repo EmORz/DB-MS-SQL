@@ -53,6 +53,9 @@ SELECT ProjectID,
 	   ISNULL(CAST(EndDate AS varchar), 'Not Finished')
  FROM Projects
 
+-- COALESCE – evaluates the arguments in order and returns the current value of the first expression that
+-- initially does not evaluate to NULL
+SELECT COALESCE(NULL, NULL, 'THIRD_VALUE', NULL, 'FOURTH_VALUE')
 
 
 
