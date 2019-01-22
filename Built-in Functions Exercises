@@ -58,9 +58,11 @@ SELECT ProjectID,
 SELECT COALESCE(NULL, NULL, 'THIRD_VALUE', NULL, 'FOURTH_VALUE')
 
 
-
-
-
+ SELECT EmployeeID, FirstName, LastName
+    FROM Employees
+ORDER BY EmployeeID
+  OFFSET 10 ROWS
+   FETCH NEXT 5 ROWS ONLY
 
 ******************************************************************
 01. Find Names of All Employees by First Name 
