@@ -65,6 +65,8 @@ ORDER BY EmployeeID
    FETCH NEXT 5 ROWS ONLY
 
 ******************************************************************
+Exercises
+
 01. Find Names of All Employees by First Name 
 SELECT FirstName, LastName
   FROM Employees
