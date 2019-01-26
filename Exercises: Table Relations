@@ -1,0 +1,223 @@
+Problem 1.	One-To-One Relationship
+
+  create table Passports (
+  PassportID int identity(101,1) not null,
+  PassportNumber char(8) not null,
+  constraint PK_Passports primary key(PassportID)
+  
+  )
+
+  create table Persons(
+  PersonID int not null  ,
+  FirstName nvarchar(50) not null  ,
+  Salary decimal(15,2),
+  PassportID int unique not null,
+  constraint PK_Persons primary key(PersonID),
+  constraint FK_Persons_Passports foreign key(PassportID) references Passports(PassportID)
+  
+  )
+
+  insert into Passports
+  values
+  ('N34FG21B'),
+  ('K65LO4R7'),
+  ('ZE657QP2')
+
+  insert into Persons
+  values
+  (1, 'Roberto', 43300.00, 102),
+  (2, 'Tom',56100.00, 103),
+  (3, 'Yana', 60200.00, 101)
+
+
+Problem 2.	One-To-Many Relationship
+
+create table Manufacturers(
+ManufacturerID int not null identity,
+[Name] varchar(50) not null,
+[EstablishedOn]  date default getdate(),
+constraint PK_Manufacturers primary key(ManufacturerID)
+
+)
+
+create table Models(
+ModelID int not null, 
+[Name] varchar(50) not null,
+ManufacturerID int not null,
+constraint PK_Models primary key(ModelID),
+constraint PK_Models_Manufacturers foreign key(ManufacturerID) references Manufacturers(ManufacturerID)
+)
+insert into Manufacturers
+values
+('BMW',	'07/03/1916'),
+('Tesla','01/01/2003'),
+('Lada','01/05/1966')
+
+insert into Models
+values
+(101,'X1',	1),
+(102,'i6',	1),
+(103,'MOdel S',	2),
+(104,'MOdel X',	2),
+(105,'MOdel 3',	2),
+(106,'Nova',	3)
+
+Problem 3.	Many-To-Many Relationship
+Create three tables as follows. Use appropriate data types.
+create table Students(
+StudentID int not null identity,
+[Name] varchar(255) not null,
+constraint PK_Students primary key(StudentID)
+
+)
+
+create table Exams (
+ExamID int not null,
+[Name] varchar(255) not null,
+constraint PK_Exams primary key (ExamID)
+
+)
+
+create table StudentsExams(
+StudentID int not null,
+ExamID int  not null,
+constraint PK_StudentsExams primary key (StudentID, ExamID ),
+constraint FK_StudentsExams_Students foreign key(StudentID) references Students(StudentID),
+constraint FK_StudentsExams_ExamID foreign key (ExamID)  references Exams(ExamID)
+
+) 
+
+insert into Students
+values
+('Mila'),
+('Toni'),
+('Ron')
+
+insert into Exams
+values
+(101, 'SpringMVC' ),
+(102, 'Neo4j' ),
+(103, 'v' )
+
+insert into StudentsExams
+values
+(1, 101),
+(1, 102),
+(2, 101),
+(3, 103),
+(2, 102),
+(2, 103)
+
+create table Teachers(
+TeacherID int not null,
+[Name] varchar(255),
+ManagerID int,
+constraint PK_Teachers primary key (TeacherID),
+constraint FK_Teachers_Teachers foreign key (ManagerID) references Teachers(TeacherID)
+)
+
+insert into Teachers
+values
+(101,'John', NULL ),
+(102, 'Maya', 106 ),
+(103, 'Silvia', 106 ),
+(104, 'Ted', 105),
+(105, 'Mark', 101 ),
+(106, 'Greta', 101 )
+
+create table ItemTypes(
+ItemTypeID int not null,
+[Name] varchar(50) not null,
+constraint PK_ItemTypes primary key(ItemTypeID)
+)
+
+create table Items(
+ItemID int not null,
+[Name] varchar(50) not null,
+ItemTypeID int,
+constraint PK_Items primary key(ItemID),
+constraint FK_Items_ItemTypes foreign key(ItemTypeID) references ItemTypes(ItemTypeID)
+)
+
+create table Cities(
+CityID int not null,
+[Name] varchar(50) not null,
+constraint PK_Cities primary key(CityID)
+)
+
+create table Customers (
+CustomerID int not null,
+[Name] varchar(50) not null,
+Birthday date,
+CityID int,
+constraint PK_Customers primary key(CustomerID),
+constraint FK_Customers_Cities foreign key(CityID) references Cities(CityID)
+)
+
+create table Orders (
+OrderID int not null,
+CustomerID int not null,
+constraint PK_Orders primary key(OrderID),
+constraint FK_Orders_Customers foreign key(CustomerID) references Customers(CustomerID)
+
+)
+
+create table OrderItems(
+OrderID int not null,
+ItemID int not null,
+constraint PK_OrderItems primary key(OrderID, ItemID),
+constraint FK_OrderItems_Order foreign key (OrderID) references Orders(OrderID),
+constraint FK_OrderItems_Items foreign key (ItemID) references Items(ItemID)
+)
+
+create table Majors(
+MajorID int not null,
+[Name] varchar(50) not null,
+constraint PK_Majors primary key (MajorID)
+)
+
+create table Students(
+StudentID int not null,
+StudentNumber int not null,
+StudentName nvarchar(255) not null,
+MajorID int,
+constraint PK_Students primary key(StudentID),
+constraint FK_Studnts_Majors foreign key(MajorID) references Majors(MajorID)
+)
+
+create table Payments(
+PaymentID int not null,
+PaymentDate date default getdate(),
+PaymentAmount decimal(15, 2) not null,
+StudentID int,
+constraint PK_Payments primary key(PaymentID),
+constraint FK_Payments_Students foreign key (StudentID) references Students(StudentID)
+)
+
+create table Subjects (
+SubjectID int not null,
+SubjectName nvarchar(255),
+constraint PK_Subjects primary key(SubjectID)
+)
+
+create table Agenda (
+StudentID int not null,
+SubjectID int not null,
+constraint PK_Agenda primary key(StudentID, SubjectID),
+constraint FK_Agenda_Student foreign key (StudentID) references Students(StudentID),
+constraint FK_Agenda_Subject foreign key (SubjectID) references Subjects(SubjectID)
+)
+
+Problem 9.	*Peaks in Rila
+Display all peaks for "Rila" mountain. Include:
+•	MountainRange
+•	PeakName
+•	Elevation
+Peaks should be sorted by elevation descending.
+
+select m.MountainRange,p.PeakName, p.Elevation
+ from Peaks as p
+join Mountains as m on
+ m.Id = p.MountainId
+ where m.MountainRange = 'Rila'
+ order by p.Elevation desc
