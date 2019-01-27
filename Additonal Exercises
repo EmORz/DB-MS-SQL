@@ -1,0 +1,6 @@
+Problem 1.	Number of Users for Email Provider
+Find number of users for email provider from the largest to smallest, then by Email Provider in ascending order. 
+
+  select distinct SUBSTRING(Email, CHARINDEX('@', Email)+1, len(Email)) as [Email Provider], COUNT(*) from Users
+  group by SUBSTRING(Email, CHARINDEX('@', Email)+1, len(Email))
+  order by count(*) desc, [Email Provider]
