@@ -1,0 +1,106 @@
+select top(5) emp.EmployeeID, emp.JobTitle, emp.AddressID, adr.AddressText from Employees as emp
+join Addresses as adr
+on adr.AddressID = emp.AddressID
+order by adr.AddressID
+
+
+select top 50 emp.FirstName,
+       emp.LastName,
+	   t.[Name],
+	   adr.AddressText
+  from Employees as emp
+  join Addresses as adr
+  on adr.AddressID = emp.AddressID
+  join Towns as t
+  on t.TownID = adr.TownID
+order by emp.FirstName, emp.LastName
+
+
+
+select em.EmployeeID, em.FirstName, em.LastName, d.[Name] from Employees as em
+join Departments as d
+on d.DepartmentID = em.DepartmentID
+where d.Name = 'Sales'
+order by em.EmployeeID
+
+
+select top 5
+       em.EmployeeID,
+       em.FirstName,
+	   em.Salary,
+	   dep.[Name]
+ from Employees as em
+join Departments as dep
+on dep.DepartmentID = em.DepartmentID
+where em.Salary > 15000
+order by em.DepartmentID
+
+select top 3 e.EmployeeID, e.FirstName from Employees as e
+left outer join EmployeesProjects as em 
+on em.EmployeeID = e.EmployeeID
+where em.EmployeeID is null
+
+
+select e.FirstName, e.LastName, e.HireDate, d.[Name] from Employees as e
+join Departments as d
+on d.DepartmentID = e.DepartmentID
+where e.HireDate > '1.1.1999' and d.[Name] in ('Sales', 'Finance')
+order by e.HireDate
+
+
+select top 5 em.EmployeeID, em.FirstName, pr.[Name] from Employees as em
+join EmployeesProjects as ep
+on ep.EmployeeID = em.EmployeeID
+join Projects as pr
+on pr.ProjectID = ep.ProjectID
+where pr.StartDate > '08.13.2002' and pr.EndDate is null
+order by em.EmployeeID
+
+
+
+select e.EmployeeID,
+       e.FirstName,
+	   case 
+	       when p.StartDate > '1.1.2005'
+		   then null
+		   else p.[Name]
+		end
+ from Employees as e
+ join EmployeesProjects as ep
+ on ep.EmployeeID = e.EmployeeID
+ join Projects as p
+ on p.ProjectID = ep.ProjectID
+ where e.EmployeeID = 24 
+ 
+ 
+ select e.EmployeeID
+      ,e.FirstName
+	  ,e.ManagerID
+	  ,m.FirstName as [ManagerID]
+  from Employees as e
+  join Employees as m
+  on m.EmployeeID = e.ManagerID
+  where e.ManagerID in (3,7)
+  order by e.EmployeeID
+  
+  
+  select top 50 e.EmployeeID
+      ,e.FirstName+' '+e.LastName as [EmployeeName]
+	  ,m.FirstName+' '+m.LastName as [ManagerName]
+	  ,d.[Name]
+ from Employees as e
+ join Employees as m
+ on m.EmployeeID=e.ManagerID
+ join Departments as d
+ on d.DepartmentID=e.DepartmentID
+ order by e.EmployeeID
+ 
+ 
+ select min(avgR.average)
+from
+(
+    select avg(Salary) as average from Employees
+	group by DepartmentID
+      
+) as avgR
+
