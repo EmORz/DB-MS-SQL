@@ -22,3 +22,8 @@ Output
  order by ug.Level desc
       ,us.Username
 	  ,g.Name
+
+
+select p.PeakName, m.MountainRange as [Mountain], p.Elevation from Mountains as m
+join Peaks as p on p.MountainId = m.Id
+order by p.Elevation desc, p.PeakName
