@@ -1,0 +1,237 @@
+select top(5) emp.EmployeeID, emp.JobTitle, emp.AddressID, adr.AddressText from Employees as emp
+join Addresses as adr
+on adr.AddressID = emp.AddressID
+order by adr.AddressID
+
+
+select top 50 emp.FirstName,
+       emp.LastName,
+	   t.[Name],
+	   adr.AddressText
+  from Employees as emp
+  join Addresses as adr
+  on adr.AddressID = emp.AddressID
+  join Towns as t
+  on t.TownID = adr.TownID
+order by emp.FirstName, emp.LastName
+
+
+select em.EmployeeID, em.FirstName, em.LastName, d.[Name] from Employees as em
+join Departments as d
+on d.DepartmentID = em.DepartmentID
+where d.Name = 'Sales'
+order by em.EmployeeID
+
+
+select top 5
+       em.EmployeeID,
+       em.FirstName,
+	   em.Salary,
+	   dep.[Name]
+ from Employees as em
+join Departments as dep
+on dep.DepartmentID = em.DepartmentID
+where em.Salary > 15000
+order by em.DepartmentID
+
+
+select top 3 e.EmployeeID, e.FirstName from Employees as e
+left outer join EmployeesProjects as em 
+on em.EmployeeID = e.EmployeeID
+where em.EmployeeID is null
+
+
+select e.FirstName, e.LastName, e.HireDate, d.[Name] from Employees as e
+join Departments as d
+on d.DepartmentID = e.DepartmentID
+where e.HireDate > '1.1.1999' and d.[Name] in ('Sales', 'Finance')
+order by e.HireDate
+
+
+select top 5 em.EmployeeID, em.FirstName, pr.[Name] from Employees as em
+join EmployeesProjects as ep
+on ep.EmployeeID = em.EmployeeID
+join Projects as pr
+on pr.ProjectID = ep.ProjectID
+where pr.StartDate > '08.13.2002' and pr.EndDate is null
+order by em.EmployeeID
+
+
+select e.EmployeeID,
+       e.FirstName,
+	   case 
+	       when p.StartDate > '1.1.2005'
+		   then null
+		   else p.[Name]
+		end
+ from Employees as e
+ join EmployeesProjects as ep
+ on ep.EmployeeID = e.EmployeeID
+ join Projects as p
+ on p.ProjectID = ep.ProjectID
+ where e.EmployeeID = 24 
+ 
+ 
+  select e.EmployeeID
+      ,e.FirstName
+	  ,e.ManagerID
+	  ,m.FirstName as [ManagerID]
+  from Employees as e
+  join Employees as m
+  on m.EmployeeID = e.ManagerID
+  where e.ManagerID in (3,7)
+  order by e.EmployeeID
+  
+  
+  
+    select top 50 e.EmployeeID
+      ,e.FirstName+' '+e.LastName as [EmployeeName]
+	  ,m.FirstName+' '+m.LastName as [ManagerName]
+	  ,d.[Name]
+ from Employees as e
+ join Employees as m
+ on m.EmployeeID=e.ManagerID
+ join Departments as d
+ on d.DepartmentID=e.DepartmentID
+ order by e.EmployeeID
+ 
+ 
+ 
+  select min(avgR.average)
+from
+(
+    select avg(Salary) as average from Employees
+	group by DepartmentID
+      
+) as avgR
+
+
+
+select cc.CountryCode, m.MountainRange, p.PeakName, p.Elevation from MountainsCountries as cc
+join Mountains as m
+on m.Id =cc.MountainId
+join Peaks as p
+on p.MountainId=m.Id
+where cc.CountryCode = 'BG' and p.Elevation>2835
+order by p.Elevation desc
+
+
+select mc.CountryCode,
+       count(m.MountainRange)
+
+ from MountainsCountries as mc
+join Mountains as m
+on m.Id = mc.MountainId
+where mc.CountryCode in ('US', 'BG', 'RU')
+group by mc.CountryCode
+
+
+select top 5 c.CountryName
+      ,r.RiverName
+ from Countries as c
+ left join CountriesRivers as cr
+ on cr.CountryCode=c.CountryCode
+ left join Rivers as r
+ on r.Id=cr.RiverId
+ join Continents as cnt
+ on cnt.ContinentCode=c.ContinentCode
+ where cnt.ContinentName = 'Africa'
+ order by c.CountryName
+ 
+ 
+ --Write a query that selects:
+--•	ContinentCode
+--•	CurrencyCode
+--•	CurrencyUsage
+--Find all continents and their most used currency. Filter any currency that is used in only one country. Sort your results by ContinentCode.
+
+select MostUsedCurrency.ContinentCode
+      ,MostUsedCurrency.CurrencyCode
+	  ,MostUsedCurrency.CurrenctUsage
+from
+(
+      select c.ContinentCode
+            ,c.CurrencyCode
+      	  ,COUNT(c.CurrencyCode) as [CurrenctUsage]
+      	  ,DENSE_RANK() over(partition by c.ContinentCode order by count(c.CurrencyCode) desc) as [CurrencyRank]
+        from Countries as c
+        group by c.ContinentCode,c.CurrencyCode
+        having count(c.CurrencyCode) > 1
+) as MostUsedCurrency
+where MostUsedCurrency.CurrencyRank=1
+order by MostUsedCurrency.ContinentCode, MostUsedCurrency.CurrenctUsage
+
+
+
+ select COUNT(c.CountryCode) as [CountryCode]
+from Countries as c
+   left join MountainsCountries as mc
+   on mc.CountryCode=c.CountryCode
+where mc.CountryCode is null
+
+
+select top 5 peak.CountryName
+      ,peak.Elevation
+	  ,riv.Length
+from
+(
+    select c.CountryName
+	      ,c.ContinentCode
+		  ,DENSE_RANK() OVER(PARTITION BY c.CountryName ORDER BY p.Elevation DESC) AS DescendingElevationRank
+		  ,p.Elevation 
+	from Countries as c
+	   full outer join MountainsCountries as mc
+	   on mc.CountryCode = c.CountryCode
+	   full outer join Mountains as m
+	   on m.Id = mc.MountainId
+	   full outer join Peaks as p
+	   on p.MountainId=m.Id
+) as peak
+full outer join
+(
+   select c.CountryName
+         ,c.CountryCode
+		 ,DENSE_RANK() OVER(PARTITION BY c.CountryCode ORDER BY r.Length DESC) AS DescendingRiversLenghRank
+		 ,r.Length
+          
+   from Countries as c
+    full outer join CountriesRivers as cr
+    on c.CountryCode = cr.CountryCode
+    full outer join Rivers as r
+    on  cr.RiverId = r.Id
+
+) as riv on peak.CountryName = riv.CountryName
+where peak.DescendingElevationRank=1
+      and riv.DescendingRiversLenghRank=1 
+	  and (peak.Elevation is not null 
+	       or riv.Length is not null)
+order by peak.Elevation desc,
+         riv.Length desc,
+		 CountryName
+		 
+		 
+		 
+		 select top 5 k.CountryName
+      ,isnull(k.PeakName, '(no highest peak)')
+	 ,isnull(k.MaxElevation, 0)
+	 ,isnull(k.MountainRange, '(no mountain)')
+from
+(
+
+     select c.CountryName
+           ,Max(p.Elevation) as [MaxElevation]
+           ,p.PeakName
+     	  ,m.MountainRange
+     	  ,DENSE_RANK() over(partition by c.CountryName order by max(p.Elevation) desc) as ElevationRank
+     
+     from Countries as c
+       left join MountainsCountries as mc on mc.CountryCode = c.CountryCode
+       left join Mountains as m on m.Id = mc.MountainId
+       left join Peaks as p on p.MountainId = m.Id
+       group by c.CountryName, p.PeakName, m.MountainRange
+) as k
+where k.ElevationRank=1
+order by k.CountryName, k.PeakName
+
+
+
