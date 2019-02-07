@@ -1,6 +1,24 @@
 Problem 1.	Number of Users for Email Provider
 Find number of users for email provider from the largest to smallest, then by Email Provider in ascending order. 
-
   select distinct SUBSTRING(Email, CHARINDEX('@', Email)+1, len(Email)) as [Email Provider], COUNT(*) from Users
   group by SUBSTRING(Email, CHARINDEX('@', Email)+1, len(Email))
   order by count(*) desc, [Email Provider]
+  
+  
+  Problem 2.	All User in Games
+Find all user in games with information about them. Display the game name, game type, username, level, cash and character name. Sort the result by level in descending order, then by username and game in alphabetical order. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+ select g.Name as [Game]
+       ,gt.Name as [Game Type]
+	   ,us.Username as [Username]
+	   ,ug.Level
+	   ,ug.Cash
+	   ,ch.Name as [Character] 
+  from UsersGames as ug
+ join Games as g on g.Id = ug.GameId
+ join GameTypes as gt on gt.Id = g.GameTypeId
+ join Users as us on us.Id = ug.UserId
+ join Characters as ch on ch.Id = ug.CharacterId
+ order by ug.Level desc
+      ,us.Username
+	  ,g.Name
