@@ -1,0 +1,446 @@
+create procedure usp_GetEmployeesSalaryAbove35000
+as
+   begin 
+        select FirstName as [First Name]
+		      ,LastName as [Last Name]
+		 from Employees
+		 where Salary > 35000   
+   end
+
+
+
+CREATE PROCEDURE usp_GetEmployeesSalaryAboveNumber
+  (
+        @moneySalary decimal(15, 2)
+  )
+ as
+    begin
+	    select FirstName as [First Name]
+		      ,LastName as [Last Name]
+		 from Employees
+		 where Salary >= @moneySalary
+	end;
+
+
+
+create  proc  usp_GetTownsStartingWith (@townsInput varchar(max))
+as
+   begin
+        select Name 
+
+		from Towns
+		where Name like (@townsInput+'%')
+
+   end
+
+
+
+create  proc  usp_GetEmployeesFromTown (@townsName varchar(max))
+as
+   begin
+        select e.FirstName
+		       ,e.LastName 
+
+		from Employees as e
+		join Addresses as adr
+		on adr.AddressID=e.AddressID
+		join Towns as t
+		on t.TownID = adr.TownID
+		where @townsName=t.Name
+   end
+
+
+
+create function ufn_GetSalaryLevel(@salary MONEY) 
+returns nvarchar(10)
+as
+   begin
+       declare @salaryLevel nvarchar(10)
+	   if(@salary<30000)
+	     begin
+		     set @salaryLevel = 'Low'
+		 end
+	   else if(@salary<=50000)
+	     begin
+		     set @salaryLevel = 'Average'
+		 end
+	   else
+	         set @salaryLevel = 'High'
+   return @salaryLevel
+   end
+   
+   
+   create proc usp_EmployeesBySalaryLevel (@levaSalary varchar(7))
+as
+   begin
+        select FirstName AS [First Name]
+		      ,LastName as [Last Name]
+		  from Employees
+		where dbo.ufn_GetSalaryLevel (Salary) = @levaSalary
+   end
+
+
+
+create function ufn_IsWordComprised(@setOfLetters nvarchar(max), @word nvarchar(max))
+  returns bit
+  as
+     begin
+	     declare @currentIndex int = 1 
+		 while(@currentIndex<=len(@word))
+		   begin
+		      declare @currentLetter char = substring(@word,@currentIndex, 1)
+			  if(CHARINDEX(@currentLetter,@setOfLetters)<=0)
+			    begin
+				   return 0
+				   end
+				  set @currentIndex +=1
+		   end
+		   return 1
+	 end
+
+
+
+create proc usp_DeleteEmployeesFromDepartment (@departmentId INT) 
+as
+   begin
+        alter table Employees alter column ManagerID int
+        alter table Employees alter column DepartmentID int
+
+		update Employees
+		   set DepartmentID = null
+		where EmployeeID in
+		(
+		   select EmployeeID
+		   from Employees
+		   where DepartmentID=@departmentId
+		)
+
+		
+		update Employees
+		   set ManagerID = null
+		where ManagerID in
+		(
+		   select EmployeeID
+		   from Employees
+		   where DepartmentID=@departmentId
+		)
+		alter table Departments alter column ManagerID int
+
+		update Departments
+		   set 
+		       ManagerID = null
+		where DepartmentID=@departmentId
+		delete from Departments
+		where DepartmentID = @departmentId
+
+		delete from EmployeesProjects
+		where EmployeeID in
+		(
+		    (
+			    select EmployeeID
+				 from Employees
+				 where DepartmentID = @departmentId
+			)
+		)
+		delete from Employees
+		where DepartmentID=@departmentId
+
+		select count(*) from Employees
+		where DepartmentID=@departmentId
+    end
+
+
+
+create proc usp_GetHoldersFullName 
+as
+   begin
+      select FirstName+' '+LastName as [Full Name]
+	    from AccountHolders
+   
+   
+   end
+
+
+
+create proc usp_GetHoldersWithBalanceHigherThan (@balance money) 
+as
+   begin
+      select ah.FirstName as [First Name],
+	      ah.LastName as [Last Name] 
+	 from AccountHolders as ah
+	 join Accounts as a on a.AccountHolderId = ah.Id
+    group by ah.FirstName, ah.LastName
+      having @balance < sum(a.Balance)
+		 order by ah.FirstName, ah.LastName
+   end
+   
+   
+   
+   create function ufn_CalculateFutureValue 
+(
+    @sum money,
+	@yearlyInterestRate float,
+	@numberOfYears int
+)
+returns money
+as
+   begin
+      return @sum * power((1+@yearlyInterestRate), @numberOfYears)
+   end
+
+
+
+
+create proc  usp_CalculateFutureValueForAccount 
+(
+       @accountId int,
+	   @interestRate float
+)
+as
+    begin
+	     select a.Id
+		       ,ah.FirstName
+			   ,ah.LastName
+			   ,a.Balance
+			   ,dbo.ufn_CalculateFutureValue(a.Balance, @interestRate, 5)
+		   from Accounts as a
+		   join AccountHolders as ah on ah.Id=a.AccountHolderId
+		   where a.Id = @accountId
+	end
+
+
+
+create function ufn_CashInUsersGames (@gameName nvarchar(50))
+returns table
+as 
+   return
+   (
+          select sum(asr.Cash) as [Sum Cash]
+          from
+          (    
+                 select g.Name
+                        ,usg.Cash 
+                 	   ,ROW_NUMBER() over(Order by usg.Cash desc) as RowN
+                   from Games as g
+                 join UsersGames as usg
+                 on usg.GameId = g.Id
+          	   where g.Name = @gameName
+          ) as asr
+          where asr.RowN % 2 =1
+   )
+
+
+
+create trigger tr_Accounts_Logs_After_Update on Accounts
+ for update
+ as
+    begin
+	    insert into Logs
+		values
+		(
+		  (select Id from deleted),
+		  (select Balance from deleted),
+		  (select Balance from inserted)
+		);
+
+	end
+
+
+
+create trigger tr_Logs_NotificationEmails on Logs
+  for insert 
+  as
+     begin
+	     insert into NotificationEmails
+		 values
+		 (
+		     (select AccountId from inserted),
+			 concat('Balance change for account: ', (select AccountId from inserted)),
+			 CONCAT('On ', FORMAT(GETDATE(), 'dd-MM-yyyy HH:mm'),' your balance was changed from ', (select OldSum from Logs),
+			 ' to ', (select NewSum from Logs), '.')
+		 )
+	 end
+
+
+
+create proc usp_DepositMoney (@AccountId int, @MoneyAmount money) 
+as
+  begin
+     if(@MoneyAmount <0)
+	    begin
+		   raiserror('Cannot deposit negative value', 16, 1)
+
+		end
+		else
+		  begin
+		     if(@MoneyAmount is null and @AccountId is null)
+			   begin
+		       raiserror('Missing value', 16, 1)
+		   end
+		end
+		begin transaction
+		update Accounts
+		   set Balance+=@MoneyAmount
+		where @AccountId= Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+			   raiserror('Account doesn''t existx', 16,1)
+			   end
+			   commit
+  end	
+
+
+
+create proc usp_WithdrawMoney (@AccountId int, @MoneyAmount money) 
+as
+  begin
+     if(@MoneyAmount <0)
+	    begin
+		   raiserror('Cannot withdraw negative value', 16, 1)
+
+		end
+		else
+		  begin
+		     if(@MoneyAmount is null and @AccountId is null)
+			   begin
+		       raiserror('Missing value', 16, 1)
+		   end
+		end
+		begin transaction
+		update Accounts
+		   set Balance-=@MoneyAmount
+		where @AccountId= Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+			   raiserror('Account doesn''t existx', 16,1)
+			   end
+		else
+		begin
+		   if(0> (select Balance from Accounts where Id = @AccountId))
+		   begin
+		     rollback
+			    RAISERROR('Balance not enough', 16, 1);
+		   end
+		end
+	commit
+  end
+
+
+
+create proc usp_TransferMoney(@SenderId int, @ReceiverId int, @Amount money) 
+as
+  begin
+     if(@Amount <0)
+	    begin
+		   raiserror('Cannot transfer negative value', 16, 1)
+
+		end
+		else
+		  begin
+		     if(@Amount is null and @SenderId is null and @ReceiverId is null)
+			   begin
+		       raiserror('Missing value', 16, 1)
+		   end
+		end
+		begin transaction
+		update Accounts
+		   set Balance-=@Amount
+		where @SenderId = Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+	             RAISERROR('Sender''s account doesn''t exists', 16, 1);
+			   end
+
+		   if(0> (select Balance from Accounts where Id = @SenderId))
+		   begin
+		     rollback
+			    RAISERROR('Not enough funds', 16, 1);
+		   end
+		   	update Accounts
+		   set Balance+=@Amount
+		where @ReceiverId = Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+	             RAISERROR('Reciever''s account doesn''t exists', 16, 1);
+			   end
+	commit
+  end
+
+
+
+create proc usp_TransferMoney(@SenderId int, @ReceiverId int, @Amount money) 
+as
+  begin
+     if(@Amount <0)
+	    begin
+		   raiserror('Cannot transfer negative value', 16, 1)
+
+		end
+		else
+		  begin
+		     if(@Amount is null and @SenderId is null and @ReceiverId is null)
+			   begin
+		       raiserror('Missing value', 16, 1)
+		   end
+		end
+		begin transaction
+		update Accounts
+		   set Balance-=@Amount
+		where @SenderId = Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+	             RAISERROR('Sender''s account doesn''t exists', 16, 1);
+			   end
+
+		   if(0> (select Balance from Accounts where Id = @SenderId))
+		   begin
+		     rollback
+			    RAISERROR('Not enough funds', 16, 1);
+		   end
+		   	update Accounts
+		   set Balance+=@Amount
+		where @ReceiverId = Id
+		if(@@ROWCOUNT<1)
+		  begin
+		     rollback;
+	             RAISERROR('Reciever''s account doesn''t exists', 16, 1);
+			   end
+	commit
+  end
+
+
+
+create proc usp_AssignProject(@emloyeeId int, @projectID int) 
+as
+   begin
+       begin transaction 
+	   insert into EmployeesProjects(EmployeeID, ProjectID)
+	   values (@emloyeeId, @projectID);
+	   if((select COUNT(EmployeeID) from EmployeesProjects where EmployeeID=@emloyeeId)>3)
+	    begin 
+		     rollback 
+			      RAISERROR('The employee has too many projects!', 16, 1);
+				     end
+					 commit
+				end
+
+
+
+create trigger tr_DeleteEmployeesSaver on Employees
+after delete
+as
+   begin
+       insert into Deleted_Employees
+	      select FirstName
+		        ,LastName
+				,MiddleName
+				,JobTitle
+				,DepartmentID
+				,Salary  
+		    from deleted
+   end
