@@ -27,3 +27,144 @@ Output
 select p.PeakName, m.MountainRange as [Mountain], p.Elevation from Mountains as m
 join Peaks as p on p.MountainId = m.Id
 order by p.Elevation desc, p.PeakName
+
+
+Problem 3.	Users in Games with Their Items
+Find all users in games with their items count and items price. Display the username, game name, items count and items price. Display only user in games with items count more or equal to 10. Sort the results by items count in descending order then by price in descending order and by username in ascending order. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+Username	Game	Items Count	Items Price
+skippingside	Rose Fire & Ice	23	11065.00
+countrydecay	Star of Bethlehem	18	8039.00
+obliquepoof	Washington D.C.	17	5186.00
+
+select u.Username,
+       g.Name as [Game], 
+	   count(i.Name) as [Items Count],
+	   sum(i.Price) as [Items Price] 
+from UsersGames as ug
+ full join Games as g on g.Id = ug.GameId
+ full join Users as u on u.Id= ug.UserId
+ full join UserGameItems as ugi on ugi.UserGameId = u.Id
+ full join Items as i on i.Id = ugi.ItemId
+--where u.Username like 'skippingside'
+
+group by u.Username, g.Name
+having count(i.Name) > 10
+order by count(i.Name) desc, sum(i.Price) desc, u.Username
+
+
+Problem 5.	All Items with Greater than Average Statistics
+Find all items with statistics larger than average. Display only items that have Mind, Luck and Speed greater than average Items mind, luck and speed. Sort the results by item names in alphabetical order. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+Name	Price	MinLevel	Strength	Defence	Speed	Luck	Mind
+Aether Walker	473.00	46	2	10	15	11	13
+Ancient Parthan Defenders	566.00	38	5	7	10	19	18
+Aquila Cuirass	405.00	76	5	7	10	19	18
+Arcstone	613.00	50	2	10	15	11	13
+select it.Name
+      ,it.Price
+	  ,it.MinLevel
+	  ,st.Strength
+	  ,st.Defence
+	  ,st.Speed
+	  ,st.Luck
+	  ,st.Mind  
+   from Items as it
+join [Statistics] as st on st.Id = it.StatisticId
+--order by avg(st.Mind), avg(st.Luck), avg(st.Speed)
+group by it.Name
+having AVG(st.Mind) < st.Mind and AVG(st.Luck) < st.Luck and avg(st.Speed) < st.Speed
+
+
+Problem 6.	Display All Items with Information about Forbidden Game Type
+Find all items and information whether and what forbidden game types they have. Display item name, price, min level and forbidden game type. Display all items. Sort the results by game type in descending order, then by item name in ascending order. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+Item	Price	MinLevel	Forbidden Game Type
+Archfiend Arrows	531.00	8	Kinky
+Behistun Rune	611.00	67	Kinky
+Boots	782.00	44	Kinky
+…	…	…	…
+
+select it.Name as [Item], it.Price as [Price], it.MinLevel as [MinLevel], gt.Name as [Forbidden Game Type] from Items as it
+full join GameTypeForbiddenItems as gtf
+on gtf.ItemId = it.Id
+full join GameTypes as gt
+on gt.Id = gtf.GameTypeId
+order by gt.Name desc, it.Name
+
+
+Problem 8.	Peaks and Mountains
+Find all peaks along with their mountain sorted by elevation (from the highest to the lowest), then by peak name alphabetically. Display the peak name, mountain range name and elevation. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+PeakName	Mountain	Elevation
+Everest	Himalayas	8848
+K2	Karakoram	8611
+Kangchenjunga	Himalayas	8586
+…		…
+
+select p.PeakName, m.MountainRange as [Mountain], p.Elevation from Mountains as m
+join Peaks as p on p.MountainId = m.Id
+order by p.Elevation desc, p.PeakName
+
+Problem 9.	Peaks with Their Mountain, Country and Continent
+Find all peaks along with their mountain, country and continent. When a mountain belongs to multiple countries, display them all. Sort the results by peak name alphabetically, then by country name alphabetically. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+PeakName	Mountain	CountryName	ContinentName
+Aconcagua	Andes	Argentina	South America
+Aconcagua	Andes	Chile	South America
+Banski Suhodol	Pirin	Bulgaria	Europe
+…	…	…	…
+select p.PeakName, m.MountainRange as [Mountain], c.CountryName, cont.ContinentName from Mountains as m
+join Peaks as p on p.MountainId = m.Id
+join MountainsCountries as mc on mc.MountainId = m.Id
+join Countries as c on c.CountryCode = mc.CountryCode
+join Continents as cont on cont.ContinentCode = c.ContinentCode
+order by p.PeakName, c.CountryName
+
+
+Problem 10.	Rivers by Country
+For each country in the database, display the number of rivers passing through that country and the total length of these rivers. When a country does not have any river, display 0 as rivers count and as total length. Sort the results by rivers count (from largest to smallest), then by total length (from largest to smallest), then by country alphabetically. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+
+CountryName	ContinentName	RiversCount	TotalLength
+China	Asia	8	35156
+Russia	Europe	6	26427
+…		…	…
+select c.CountryName, cont.ContinentName, count(r.RiverName) as [RiversCount], isnull(sum(r.Length),0) as [TotalLenght]  from Countries as c
+join Continents as cont on cont.ContinentCode = c.ContinentCode
+left join CountriesRivers as cr on cr.CountryCode = c.CountryCode
+left join Rivers as r on r.Id = cr.RiverId
+group by c.CountryName, cont.ContinentName
+order by count(r.RiverName) desc, sum(r.Length) desc, c.CountryName
+
+
+Problem 11.	Count of Countries by Currency
+Find the number of countries for each currency. Display three columns: currency code, currency description and number of countries. Sort the results by number of countries (from highest to lowest), then by currency description alphabetically. Name the columns exactly like in the table below. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+CurrencyCode	Currency	NumberOfCountries
+EUR	Euro Member Countries	35
+USD	United States Dollar	17
+AUD	Australia Dollar	8
+XOF	Communauté Financière Africaine (BCEAO) Franc	8
+…	…	…
+SELECT curr.CurrencyCode as [CurrencyCode], curr.Description as [Currency], count(cont.CountryCode) as [NumberOfCountries] from Countries as cont
+full join Currencies as curr on cont.CurrencyCode = curr.CurrencyCode
+group by curr.CurrencyCode, curr.Description
+order by count(cont.CountryCode) desc, curr.Description
+
+
+
+Problem 12.	Population and Area by Continent
+For each continent, display the total area and total population of all its countries. Sort the results by population from highest to lowest. Submit your query statement as Prepare DB & run queries in Judge.
+Output
+ContinentName	CountriesArea	CountriesPopulation
+Asia	31603228	4130318467
+Africa	30360296	1015470588
+…	…	…
+select co.ContinentName, sum(c.AreaInSqKm) as [CountriesArea], sum(cast((c.Population) as bigint)) as [CountriesPopulation] from Countries as c
+join Continents as co on co.ContinentCode = c.ContinentCode
+--where c.CountryName like '%A%'
+group by co.ContinentName
+order by sum(cast((c.Population) as bigint)) desc
+
+
