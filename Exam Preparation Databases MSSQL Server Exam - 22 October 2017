@@ -1,0 +1,136 @@
+create table Users
+(
+    Id int not null primary key identity,
+	Username nvarchar(30) not null unique,
+	[Password] nvarchar(50) not null,
+	[Name] nvarchar(50),
+	Gender char(1) check(Gender in('M', 'F')),
+	BirthDate datetime,
+	Age int,
+	Email nvarchar(50) not null,
+
+)
+
+create table Departments
+(
+    Id int not null primary key identity,
+    [Name] nvarchar(50) not null,
+)
+
+create table Employees
+(
+    Id int not null primary key identity,
+	[FirstName] nvarchar(50),
+	[LastName] nvarchar(50),
+	Gender char(1) check(Gender in('M', 'F')),
+	BirthDate datetime,
+	Age int,
+	DepartmentId int foreign key references Departments(Id)
+)
+
+create table Categories
+(
+    Id int not null primary key identity,
+    [Name] nvarchar(50) not null,
+	DepartmentId int foreign key references Departments(Id)
+)
+
+create table [Status]
+(
+    Id int not null primary key identity,
+    Label varchar(30) not null
+)
+
+create table Reports
+(
+    Id int not null primary key identity,
+    CategoryId int foreign key references Categories(Id) not null,
+    StatusId int foreign key references Status(Id) not null,
+	OpenDate datetime not null,
+	CloseDate datetime,
+	[Description] varchar(200),
+    UserId int foreign key references Users(Id) not null,
+    EmployeeId int foreign key references Employees(Id)
+)
+
+
+
+insert into Employees (FirstName, LastName,	Gender,	Birthdate,	DepartmentId)
+values
+('Marlo',	'O’Malley','M','9/21/1958',1),
+('Niki',	'Stanaghan','F','11/26/1969',4),
+('Ayrton',	'Senna',	'M','03/21/1960',9),
+('Ronnie',	'Peterson',	'M','02/14/1944',9),
+('Giovanna','Amati',	'F','07/20/1959',5)
+
+insert into Reports(CategoryId, StatusId, OpenDate, CloseDate, [Description], UserId, EmployeeId)
+values
+(1,	1,	'04/13/2017', null,		'Stuck Road on Str.133',	6,	2),
+(6,	3,	'09/05/2015','12/06/2015',	'Charity trail running',	3,	5),
+(14,2,	'09/07/2015',	null,	'Falling bricks on Str.58',	5,	2),
+(4,	3,	'07/03/2017',	'07/06/2017',	'Cut off streetlight on Str.11',	1,	1)
+
+update Reports
+set StatusId = 2
+where StatusId =1
+
+delete from Reports
+where StatusId = 4
+
+select u.Username, u.Age from Users as u order by u.Age, u.Username desc
+
+select r.Description, r.OpenDate from Reports as r
+where r.EmployeeId is null
+order by r.OpenDate, r.Description
+
+
+select e.FirstName, e.LastName, r.Description, CONVERT(char(10),r.OpenDate, 126) from Employees as e
+join Reports as r on r.EmployeeId = e.Id
+order by e.Id, r.OpenDate, r.Id
+
+select c.Name, COUNT(*) as ReportsNumber from Categories as c
+join Reports as r on r.CategoryId = c.Id
+group by c.Name
+order by ReportsNumber desc, c.Name
+
+select c.Name, COUNT(e.Id) from Categories as c
+join Departments as d
+on d.Id = c.DepartmentId
+join Employees as e 
+on e.DepartmentId = d.Id
+group by c.Name
+order by c.Name
+
+select distinct  e.FirstName+' '+e.LastName as Name, COUNT(r.UserId) as [Users Number] from Reports as r
+join Employees as e on r.EmployeeId = e.Id
+join Users as u on r.UserId = u.Id
+group by  e.FirstName+' '+e.LastName
+order by [Users Number] desc, Name 
+
+select r.OpenDate, r.Description, u.Email from Reports as r
+join Categories as c on c.Id = r.CategoryId
+join Users as u on u.Id = r.UserId
+where r.CloseDate is not null and len(r.Description)>20 and c.DepartmentId in (1, 4, 5) and Description like '%str%'
+group by r.OpenDate, u.Email, r.Id
+
+select c.Name as [Category Name] from Reports as r
+join Categories as c on c.Id = r.CategoryId
+join Users as u on u.Id = r.UserId
+where Day(r.OpenDate) = DAY(u.BirthDate) and
+      MONTH(r.OpenDate) = month(u.BirthDate)
+group by c.Name
+
+select u.Username from Reports as r
+join Categories as c on c.Id = r.CategoryId
+join Users as u on u.Id = r.UserId
+where LEFT(u.Username, 1) like '[0-9]'
+and CONVERT(varchar(10), c.Id) = LEFT(u.Username, 1)
+or right(u.Username, 1) like '[0-9]'
+and CONVERT(varchar(10), c.Id) = RIGHT(u.Username, 1)
+order by u.Username
+
+select d.Name, isnull(CONVERT( nvarchar(10),avg(DATEDIFF(day, r.OpenDate, r.CloseDate))), 'no info') as [Average Duration]
+ from Departments as d
+join Categories as c on c.DepartmentId = d.Id
+join Reports as r on r.CategoryId = c.Id
+group by d.Name
