@@ -1,0 +1,270 @@
+1. create table
+Supermarket
+DDL 
+create table Categories
+(
+    Id int identity primary key,
+	[Name] nvarchar(30) not null
+
+)
+
+create table Items
+(
+    Id int identity primary key,
+	[Name] nvarchar(30) not null,
+	[Price] decimal(15, 2) not null,
+	CategoryId int not null foreign key references Categories(Id)
+
+)
+
+create table Employees
+(
+       Id int identity primary key,
+	   [FirstName] nvarchar(50) not null,
+	   [LastName] nvarchar(50) not null,
+	   [Phone] char(12) not null,
+	   [Salary] decimal(15, 2) not null
+)
+
+create table Orders
+(
+    Id int identity primary key,
+	[DateTime] datetime not null,
+	EmployeeId int not null foreign key references Employees(Id)
+)
+
+create table OrderItems
+(
+   OrderId int foreign key references Orders(id) not null,
+   ItemId int foreign key references Items(Id) not null,
+   Quantity int check(Quantity>0) not null,
+   primary key(OrderId, ItemId)
+)
+
+create table Shifts
+(
+    Id int identity not null,
+	EmployeeId int foreign key references Employees(Id) not null,
+	CheckIn datetime not null,
+	CheckOut datetime not null,
+	primary key (Id, EmployeeId)
+
+)
+
+alter table Shifts
+add constraint CH_CheckInCheckOut check(CheckIn<CheckOut)
+
+2. Insert
+Insert some sample data into the database. Write a query to add the following records into the corresponding tables. All Ids should be auto-generated.
+
+insert into Employees (FirstName, LastName, Phone, Salary)
+values
+('Stoyan'	,'Petrov',	'888-785-8573',	500.25),
+('Stamat'	,'Nikolov',	'789-613-1122',	999995.25),
+('Evgeni'	,'Petkov',	'645-369-9517',	1234.51),
+('Krasimir' ,'Vidolov',	'321-471-9982',	50.25)
+
+
+insert into Items(Name, Price, CategoryId)
+values
+('Tesla battery',	154.25,	8 ),
+('Chess',	30.25,	8		  ),
+('Juice',	5.32,	1		  ),
+('Glasses',	10,	8			  ),
+('Bottle of water',	1,	1	  )
+
+3. Update
+Make all items’ prices 27% more expensive where the category ID is either 1, 2 or 3.
+
+update Items
+set Price *=1.27
+where CategoryId in (1,2,3)
+
+4. Delete
+Delete all order items where the order id is 48 (be careful with the relationships)
+
+delete from OrderItems
+where OrderId =48
+
+delete from Orders
+where Id = 48
+
+5. Richest People
+Select all employees who have a salary above 6500. Order them by first name, then by employee id.
+select e.Id, e.FirstName from Employees as e
+where e.Salary > 6500
+order by e.FirstName, e.Id
+
+6. Cool Phone Numbers
+Select all full names from employees, whose phone number start with ‘3’.
+Order them by first name (ascending), then by phone number (ascending).
+
+select e.FirstName+' '+e.LastName as [Full Name], e.Phone as [Phone Number] from Employees as e
+where e.Phone like '3%'
+order by e.FirstName, e.Phone
+
+7. Employee Statistics
+Select all employees who have orders with the total count of the orders they processed. Order them by their orders count (descending), then by first name. Select their first name, last name and total count of orders.
+
+select e.FirstName, e.LastName, COUNT(o.Id) as [Count]  froM Employees as e
+join Orders as o on o.EmployeeId = e.Id
+group by e.FirstName, e.LastName
+order by COUNT(o.Id) desc, e.FirstName
+
+
+8. Hard Workers Club
+Select all employees whose workday is over 7 hours long on average, based on their check in/check out times. Select their first, last name and average work hours.
+Order them by work hours (descending), then by employee ID.
+
+
+select e.FirstName,
+       e.LastName,
+	   avg(DATEDIFF(HOUR, s.CheckIn, s.CheckOut)) as [Work Hours] from Employees as e
+join Shifts as s on s.EmployeeId = e.Id
+group by e.FirstName, e.LastName, e.Id
+Having  avg(DATEDIFF(HOUR, s.CheckIn, s.CheckOut)) > 7
+order by [Work Hours] desc, e.Id
+
+
+9. The Most Expensive Order
+Find the most expensive order. Select its id and total item price. Consider the item quantity when calculating the price.
+select top 1 oi.OrderId, sum(oi.Quantity*i.Price) as [TotalPrice] from Items as i
+join OrderItems as oi on i.Id = oi.ItemId
+group by oi.OrderId
+order by TotalPrice desc
+
+10. Rich Item, Poor Item
+Find the top 10 most expensive and cheapest item in each order.
+Order the results by most expensive item’s price (descending), then by order id (ascending).
+
+select top 10
+      oi.OrderId,
+      MAX(i.Price) as [ExpensivePrice],
+      MIN(i.Price) as [CheapPrice] 
+from Orders as o
+join OrderItems as oi on oi.OrderId = o.Id
+join Items as i on i.Id = oi.ItemId
+group by oi.OrderId
+order by ExpensivePrice desc, oi.OrderId
+
+
+11. Cashiers
+Find all employees who have orders. Select their id, first name and last name. Order them by employee id.
+
+select distinct
+        e.Id,
+	    e.FirstName,
+        e.LastName
+
+ from Employees as e
+join Orders as o on o.EmployeeId = e.Id
+order by e.Id
+
+12. Lazy Employees
+Find all employees, who have below 4 work hours per day.
+Order them by employee id.
+
+select distinct e.Id, FirstName+' '+e.LastName as [Full Name] from Employees as e
+join Shifts as s on s.EmployeeId = e.Id
+where  DATEDIFF(HOUR, s.CheckIn, s.CheckOut) <4
+order by e.Id
+
+
+13. Sellers
+Find the top 10 employees with their full name, orders’ total price and item count. 
+Count only orders which were ordered before 2018-06-15.
+Order them by total sum (descending), then by item count (descending)
+
+
+select e.FirstName+' '+e.LastName as [Full Name],
+       SUM(i.Price*oi.Quantity) as [Total Price],
+	   sum(oi.Quantity) as Items
+ from Employees as e
+join Orders as o on o.EmployeeId= e.Id
+join OrderItems as oi on oi.OrderId = o.Id
+join Items as i on i.Id= oi.ItemId
+where o.DateTime < ' 2018-06-15'
+group by e.FirstName, e.LastName
+order by [Total Price] desc, Items
+
+14. Tough days
+Find all records of the employees who don’t have orders and who work over 12 hours. 
+Select only their full name and day of the week.
+Order the results by employee id.
+Note: By the American Standards, Sunday is the first day of week.
+
+select e.FirstName+' '+e.LastName as [Full Name],
+      DATENAME(WEEKDAY, s.CheckIn) as [Day of Week]
+  from Employees as e
+  left join Orders as o on o.EmployeeId = e.Id
+  join Shifts as s on s.EmployeeId = e.Id
+  where o.EmployeeId is null and DATEDIFF(HOUR, s.CheckIn, s.CheckOut) > 12
+  order by e.Id
+
+  16. Average Profit per Day
+Find the average profit for each day. Select the day of month and average daily profit of sold products.
+Sort them by day of month (ascending) and format the profit to the second digit after the decimal point.
+select DATEPART(day, o.DateTime) as [DayOfMonth],
+      cast( AVG(oi.Quantity*i.Price) as decimal(10,2))
+
+from Orders as o
+join OrderItems as oi on oi.OrderId = o.Id
+join Items as i on i.Id = oi.ItemId
+group by DATEPART(day, o.DateTime)
+order by DayOfMonth
+
+
+17. Top Products
+Find information about all products. Select their name, category, how many of them were sold and the total profit they produced.
+Sort them by total profit (descending) and their count (descending)
+
+select i.Name as [Items], cat.Name as [Category], SUM(oi.Quantity) as [Count], SUM(oi.Quantity*i.Price) as [Total Price] from Items as i
+join Categories as cat on i.CategoryId = cat.Id
+left join OrderItems as oi on oi.ItemId = i.Id
+group by i.Name, cat.Name
+order by [Total Price] desc, [Count] desc
+
+
+19. Cancel order
+Create a user defined stored procedure, named usp_CancelOrder(@OrderId, @CancelDate), that receives an order id and date, and attempts to delete the current order. An order will only be deleted if all of these conditions pass:
+•	If the order doesn’t exists, then it cannot be deleted. Raise an error with the message “The order does not exist!”
+•	If the cancel date is 3 days after the issue date, raise an error with the message “You cannot cancel the order!”
+If all the above conditions pass, delete the order.
+
+create  proc usp_CancelOrder(@OrderId int, @CancelDate datetime)
+as
+begin transaction
+declare @targetOrder int = (select Id from Orders where Id = @OrderId)
+
+if(@targetOrder is null)
+begin
+   raiserror('The order does not exist!',16,1)
+   return
+end
+
+declare @orderDateTime datetime = (select o.DateTime  from Orders as o where o.Id = @OrderId)
+if(DATEDIFF(DAY, @orderDateTime, @CancelDate)>3)
+begin
+   raiserror('You cannot cancel the order!',16,2)
+   return
+end
+delete from OrderItems
+where OrderId = @OrderId
+
+delete from Orders
+where Id = @OrderId
+COMMIT
+
+20. Deleted Order
+Create a new table “DeletedOrders” with columns (OrderId, ItemId, ItemQuantity). Create a trigger, which fires when order is deleted. After deleting the order, insert all of the data into the new table “DeletedOrders”.
+
+Note: Submit only your CREATE TRIGGER statement!
+Example usage:
+**
+create table DeletedOrders(OrderId int, ItemId int, ItemQuantity int)
+**
+
+create trigger tr_DeletedOrders on OrderItems after delete
+as
+insert into DeletedOrders(ItemId, OrderId, ItemQuantity)
+ select ItemId, OrderId, Quantity from deleted
