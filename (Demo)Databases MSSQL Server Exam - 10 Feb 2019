@@ -1,0 +1,207 @@
+create table Planets
+(
+   Id int not null primary key identity,
+   [Name] varchar(30) not null
+)
+
+create table Spaceports
+(
+   Id int not null primary key identity,
+   [Name] varchar(50) not null,
+   [PlanetId] int not null foreign key references Planets(iD)
+   
+)
+
+create table Spaceships
+(
+   Id int not null primary key identity,
+   [Name] varchar(50) not null,
+   Manufacturer varchar(30) not null,
+   LightSpeedRate int default(0)
+
+)
+
+create table Colonists
+(
+   Id int not null primary key identity,
+   [FirstName] varchar(20) not null,
+   [LastName] varchar(20) not null,
+   [Ucn] varchar(10) not null unique,
+   [BirthDate] date not null
+)
+create table Journeys
+(
+   Id int not null primary key identity,
+   [JourneyStart] datetime not null,
+   [JourneyEnd] datetime not null,
+   [Purpose] varchar(11) not null check(Purpose in ('Medical', 'Technical', 'Educational', 'Military')),
+   [DestinationSpaceportId] int not null foreign key references Spaceports(Id),
+   [SpaceshipId] int not null foreign key references Spaceships(Id)
+
+)
+
+create table TravelCards
+(
+   Id int not null primary key identity,
+   CardNumber char(10) not null unique,
+   [JobDuringJourney] varchar(8) not null check(JobDuringJourney in ('Pilot', 'Engineer','Trooper', 'Cleaner', 'Cook' )),
+   [ColonistId] int not null foreign key references Colonists(Id),
+   [JourneyId] int not null foreign key references Journeys(Id)
+
+)
+
+
+
+
+insert into Planets([Name])
+values
+('Mars'),
+('Earth'),
+('Jupiter'),
+('Saturn')
+
+insert into Spaceships(Name, Manufacturer, LightSpeedRate)
+values
+('Golf',	'VW',	3),
+('WakaWaka',	'Wakanda',	4),
+('Falcon9',	'SpaceX',	1),
+('Bed',	'Vidolov',	6)
+
+
+
+update Spaceships
+set LightSpeedRate+=1
+where Id between 8 and 12
+
+
+
+select tc.CardNumber, tc.JobDuringJourney from TravelCards as tc
+order by tc.CardNumber
+
+--Extract from the database, all colonists. Sort the results by first name, them by last name, and finally by id in ascending order.
+--Required Columns
+--•	Id
+--•	FullName
+--•	Ucn
+
+select c.Id, c.FirstName+' '+c.LastName, c.Ucn from Colonists as c
+order by c.FirstName, c.LastName, c.Id
+
+
+
+select j.Id, convert(varchar,j.JourneyStart, 103) as JourneyStart, convert(varchar,j.JourneyEnd,103) as JourneyEnd from Journeys as j
+where j.Purpose = 'Military'
+order by j.JourneyStart
+
+
+
+select c.Id, c.FirstName+' '+c.LastName as full_name from TravelCards as tc
+join Colonists as c on c.Id = tc.ColonistId
+where tc.JobDuringJourney like 'Pilot'
+order by c.Id
+
+select COUNT(j.Id) as [count] from Colonists as c
+join TravelCards as tc on tc.ColonistId = c.Id
+join Journeys as j on j.Id = tc.JourneyId
+where j.Purpose = 'Technical'
+
+select top 1 sp.Name, spp.Name from Spaceships as sp
+join Journeys as j on j.SpaceshipId = sp.Id
+join Spaceports as spp on spp.Id = j.DestinationSpaceportId
+group by sp.Name, sp.LightSpeedRate, spp.Name
+having sp.LightSpeedRate = MAX(sp.LightSpeedRate)
+order by sp.LightSpeedRate desc
+
+
+
+
+select distinct spa.Name, spa.Manufacturer from Spaceships as spa
+join Journeys as j on spa.Id = j.SpaceshipId
+join TravelCards as tc on tc.JourneyId = j.Id
+join Colonists as c on tc.ColonistId = c.Id
+where DATEDIFF(year, c.BirthDate, '01/01/2019')<30
+order by spa.Name
+
+
+
+
+select p.Name, s.Name from Planets as p
+join Spaceports as s on s.PlanetId = p.Id
+join Journeys as j on j.DestinationSpaceportId = s.Id 
+where j.Purpose = 'Educational'
+order by s.Name desc
+
+select p.Name, COUNT(p.Id) as JourneyCount from Planets as p 
+join Spaceports as sp on sp.PlanetId = p.Id
+join Journeys as j on j.DestinationSpaceportId = sp.Id
+group by p.Name
+order by JourneyCount desc, p.Name
+
+
+select top 1 j.Id, p.Name, spa.Name, j.Purpose   from Planets as p
+join Spaceports as spa on spa.PlanetId = p.Id
+join Journeys as j on j.DestinationSpaceportId = spa.Id
+where (DATEDIFF(day,j.JourneyStart,j.JourneyEnd)) > 0
+order by DATEDIFF(day,j.JourneyStart,j.JourneyEnd)
+
+select top 1 tc.JourneyId, tc.JobDuringJourney as JobName from Journeys as j
+join TravelCards as tc on tc.JourneyId = j.Id
+where (DATEDIFF(day,j.JourneyStart,j.JourneyEnd)) > 0
+order by DATEDIFF(day,j.JourneyStart,j.JourneyEnd) desc
+
+
+create function dbo.udf_GetColonistsCount(@PlanetName VARCHAR (30))
+returns int
+as
+  begin
+     declare @countOfColonist int;
+	 select @countOfColonist= COUNT(c.Id)
+	   from Planets as p
+       join Spaceports as sp on sp.PlanetId = p.Id
+       join Journeys as j on j.DestinationSpaceportId = sp.Id
+       join TravelCards as tc on tc.JourneyId = j.Id
+       join Colonists as c on c.Id = tc.ColonistId
+       where p.Name = @PlanetName
+	   return @countOfColonist
+  end
+
+  SELECT dbo.udf_GetColonistsCount('Otroyphus')
+  
+  
+  
+create proc usp_ChangeJourneyPurpose(@JourneyId int, @NewPurpose varchar)
+as
+begin transaction
+declare @purpose int = (select Id from Journeys where Id = @JourneyId)
+declare @tempPurpose varchar = (select Id from Journeys where Purpose = @NewPurpose)
+
+if(@purpose is null)
+begin
+   raiserror('The journey does not exist!',16,1)
+   return
+end
+
+if(@tempPurpose is not null)
+begin
+   raiserror('You cannot change the purpose!',16,2)
+   return
+end
+update Journeys
+set Purpose = @NewPurpose
+where Id = @JourneyId
+
+COMMIT
+
+EXEC usp_ChangeJourneyPurpose 2, 'Educational'
+select * from Journeys
+
+--create table DeletedJourneys(Id int, JourneyStart datetime, JourneyEnd datetime, Purpose varchar(11), DestinationSpaceportId INT, SpaceshipId INT)
+create trigger tr_DeletedJourneys on Journeys after delete
+as
+insert into DeletedJourneys(Id, JourneyStart, JourneyEnd, Purpose, DestinationSpaceportId, SpaceshipId   )
+select Id, JourneyStart, JourneyEnd, Purpose, DestinationSpaceportId, SpaceshipId from deleted
+
+
+
+
+
