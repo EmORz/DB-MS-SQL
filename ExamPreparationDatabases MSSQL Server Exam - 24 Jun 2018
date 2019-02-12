@@ -1,0 +1,307 @@
+--1
+create table Cities(
+  Id int not null identity primary key,
+  [Name] nvarchar(20) not null,
+  [CountryCode] char(2) not null
+)
+
+create table Hotels(
+  Id int not null identity primary key,
+  [Name] nvarchar(30) not null,
+  CityId int foreign key references Cities(Id),
+  EmployeeCount int not null,
+  BaseRate decimal(15, 2)
+)
+
+create table Rooms(
+  Id int not null identity primary key,
+  Price decimal(15, 2) not null,
+  [Type] nvarchar(20) not null,
+  Beds int not null,
+  HotelId int foreign key references Hotels(Id) not null
+)
+
+create table Trips(
+   Id int not null identity primary key,
+   RoomId int foreign key references Rooms(Id) not null,
+   BookDate date not null,
+   ArrivalDate date not null,
+   ReturnDate date not null,
+   CancelDate date
+)
+
+
+create table Accounts(
+  Id int not null identity primary key,
+  FirstName nvarchar(50) not null,
+  MiddleName nvarchar(20),
+  LastName nvarchar(50) not null,
+  CityId int foreign key references Cities(Id) not null,
+  BirthDate date not null,
+  Email varchar(100) not null unique
+
+
+)
+
+create table AccountsTrips(
+    AccountId int foreign key references Accounts(Id),
+	TripId int foreign key references Trips(Id),
+	Luggage int check(Luggage>=0),
+	primary key (AccountId, TripId)
+)
+
+
+
+--alter table Trips
+--add constraint CH_BookDate1 check(BookDate<ArrivalDate)
+
+--alter table Trips
+--add constraint CH_ArrivalDate1 check(ArrivalDate<ReturnDate)
+
+--2
+
+insert into Accounts (FirstName, MiddleName, LastName, CityId, BirthDate, Email)
+values
+('John',	'Smith',	'Smith',	34,	'1975-07-21',	'j_smith@gmail.com'),
+('Gosho',	NULL	,'Petrov',	11	,'1978-05-16',	'g_petrov@gmail.com'),
+('Ivan',	'Petrovich',	'Pavlov',	59,	'1849-09-26',	'i_pavlov@softuni.bg'),
+('Friedrich',	'Wilhelm',	'Nietzsche',	2,	'1844-10-15',	'f_nietzsche@softuni.bg')
+
+
+insert into Trips (RoomId, BookDate, ArrivalDate, ReturnDate, CancelDate) values
+('101',	'2015-04-12', '2015-04-14','2015-04-20','2015-02-02'),
+('102',	'2015-07-07', '2015-07-15','2015-07-22','2015-04-29'),
+('103',	'2013-07-17', '2013-07-23','2013-07-24',NULL),
+('104',	'2012-03-17', '2012-03-31','2012-04-01','2012-01-10'),
+('109',	'2017-08-07', '2017-08-28','2017-08-29',NULL)
+
+--3
+
+update Rooms
+set Price *=1.14
+where HotelId in (5, 7, 9)
+--4
+delete from AccountsTrips
+where AccountId = 47
+
+--5
+
+select c.Id, Name from Cities as c
+where c.CountryCode = 'BG'
+order by c.Name
+--6
+select concat(a.FirstName,' '+a.MiddleName,' ',a.LastName) as [Full Name], datepart(year, a.BirthDate)  from Accounts as a
+where datepart(year, a.BirthDate)  > 1991
+order by year(a.BirthDate) desc, [Full Name]  asc
+
+--7
+select a.FirstName, a.LastName, convert(char(10), a.BirthDate, 110), c.Name, a.Email from Accounts as a
+join Cities as c on c.Id = a.CityId
+where a.Email like 'e%'
+order by c.Name desc
+
+--8
+select c.Name,ISNULL( COUNT(h.Name), 0) as [Hotel]from Hotels as h
+full join Cities as c on h.CityId = c.Id
+group by c.Name
+order by Hotel desc, c.Name
+
+--9
+select distinct r.Id, r.Price, h.Name, c.Name from Rooms as r
+join Hotels as h on h.Id = r.HotelId
+join Cities as c on h.CityId = c.Id
+where r.Type like 'first class'
+order by r.Price desc, r.Id
+
+--10
+select a.Id, a.FirstName+' '+a.LastName,
+       MAX(datediff(day, t.ArrivalDate, t.ReturnDate)) as max,
+	   MIN(DATEDIFF(day, t.ArrivalDate, t.ReturnDate)) as min
+  from Accounts as a
+join AccountsTrips as [at] on at.AccountId= a.Id
+join Trips as t on t.Id = at.TripId
+where a.MiddleName is null and t.CancelDate is null
+group by a.Id, a.FirstName+' '+a.LastName, at.AccountId
+order by max desc, at.AccountId
+
+--11
+select top 5 c.Id, c.Name, c.CountryCode, COUNT(a.Id) as Accounts from Cities as c
+join Accounts as a on a.CityId = c.Id
+group by c.Id, c.Name, c.CountryCode
+order by Accounts desc
+
+--12
+select a.Id, a.Email, c.Name, COUNT(*) as [Count] from Accounts as a
+join AccountsTrips as at on at.AccountId = a.Id
+join Trips as t on t.Id = at.TripId
+join Rooms as r on r.Id = t.RoomId
+join Hotels as h on h.Id = r.HotelId
+join Cities as c on c.Id = h.CityId
+where a.CityId = h.CityId
+group by a.Id, a.Email, c.Name
+order by Count desc, a.Id
+
+--13
+select top 10 c.Id, c.Name,
+       SUM(h.BaseRate+r.Price) as TotalRevenue
+	   , COUNT(*) as Trips
+ from Hotels as h
+join Rooms as r on r.HotelId = h.Id
+join Trips as t on t.RoomId = r.Id
+join Cities as c on c.Id = h.CityId
+where year(t.BookDate) = 2016
+group by c.Id, c.Name
+order by TotalRevenue desc, Trips desc
+
+--14
+select at.TripId, h.Name, r.Type,
+      case when t.CancelDate is null then
+       SUM(h.BaseRate+r.Price)
+	   else 0
+	   end as Revenies
+  from Hotels as h
+  join Rooms as r on r.HotelId = h.Id
+  join Trips as t on t.RoomId = r.Id
+  join AccountsTrips as at on at.TripId = t.Id
+group by at.TripId, h.Name, r.Type, t.CancelDate
+order by r.Type, at.TripId
+
+--15
+select AccountId
+      ,Email
+	  ,CountryCode
+	  ,count
+
+from 
+(
+  select a.Id as AccountId
+      ,a.Email
+	  ,c.CountryCode
+	  ,COUNT(*) as count
+	  ,DENSE_RANK() OVER   
+    (PARTITION BY c.CountryCode ORDER BY count(*) DESC, a.Id) AS Rank  
+  from Accounts as a
+join AccountsTrips as at on at.AccountId=a.Id
+join Trips as t on t.Id = at.TripId
+join Rooms as r on r.Id = t.RoomId
+join Hotels as h on h.Id = r.HotelId
+join Cities as c on c.Id = h.CityId
+group by a.Id, a.Email, c.CountryCode
+) as topTravels 
+where Rank = 1
+order by count desc, AccountId
+
+
+--16
+select at.TripId, sum(at.Luggage) as Luggage,
+       concat('$',SUM(at.Luggage) * case when SUM(at.Luggage)>5 then 5 else 0 end) as Fee
+	    from Trips as t
+join AccountsTrips as at on at.TripId=t.Id
+group by at.TripId
+having SUM(at.Luggage)>0
+order by Luggage desc
+
+--17
+select t.Id, 
+     CONCAT(a.FirstName,' '+MiddleName, ' ', LastName) as [Full Name]
+	 ,c.Name as [From]
+	 ,cc.Name as [To]
+	 ,case when t.CancelDate is not null 
+	       then 'Canceled'
+		   else concat(DATEDIFF(day, t.ArrivalDate, t.ReturnDate), ' days') end as Duration
+  from Trips as t
+join AccountsTrips as ac on ac.TripId = t.Id
+join Accounts as a on a.Id = ac.AccountId
+join Rooms as r on r.Id = t.RoomId
+join Hotels as h on h.Id= r.HotelId
+join Cities as cc on cc.Id = h.CityId
+join Cities as c on a.CityId = c.Id
+order by [Full Name], t.Id
+
+
+--18
+create function udf_GetAvailableRoom(@HotelId int, @Date date, @People int)
+returns varchar(max)
+as
+begin
+      declare @AvailableRoom varchar(max) = 
+	  (
+	       select top 1 concat('Room ', r.Id,': ', r.Type, ' (', r.Beds,' beds) - $', (h.BaseRate+r.Price)*@People )
+				 --,r.Type
+				 --,r.Beds
+				 --,(h.BaseRate*r.Price)*@People
+	  
+	       from Hotels as h
+		   join Rooms as r on r.HotelId = h.Id  
+		   join Trips as t on t.RoomId = r.Id
+		   where @Date not between t.ArrivalDate and t.ReturnDate and h.Id = @HotelId and r.Beds> @People and t.CancelDate is null 
+		   order by r.Price desc
+	  ) 
+	  if(@AvailableRoom is null)
+	  begin
+	      return 'No rooms available'
+	  end
+	  return @AvailableRoom
+	  --•	(HotelBaseRate + RoomPrice) * PeopleCount
+	  --•	“Room {Room Id}: {Room Type} ({Beds} beds) - ${Total Price}”
+end
+
+--19
+create proc usp_SwitchRoom(@TripId int, @TargetRoomId int)
+as
+   begin
+	   declare @HotelID int =
+	   (
+	      select top 1 r.HotelId from Trips as t 
+		  join Rooms as r on t.RoomId = r.Id
+		  where t.Id = @TripId
+	   )
+	   declare @TargetRoomHotelId int =
+	   (
+	       select top 1 r.HotelId from Rooms as r 
+		   where r.Id = @TargetRoomId
+	   )
+
+	   if(@HotelID!=@TargetRoomHotelId)
+	   begin
+
+	     raiserror('Target room is in another hotel!', 16, 1)
+	   return
+	   end
+	   declare @NumberOfPeople int = 
+	   (
+	      select COUNT(*) from AccountsTrips as ac
+		  where ac.TripId = @TripId
+	   )
+	   if((select top 1 r.Beds from Rooms as r where r.Id = @TargetRoomId)<@NumberOfPeople)
+	   begin
+	     raiserror('Not enough beds in target room!', 16, 1)
+		 return
+	   end
+
+	   update Trips 
+	   set RoomId = @TargetRoomId
+	   where Id = @TripId   
+   end
+   
+ --20
+ create trigger T_Cancel_Trip
+on Trips
+instead of delete
+as
+  begin
+     update Trips
+	 set CancelDate = GETDATE()
+	 where Id in (
+	           select Id from deleted
+			   where CancelDate is null 
+	 )
+  end
+  
+  
+
+
+
+
+
+
