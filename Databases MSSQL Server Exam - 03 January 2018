@@ -1,0 +1,291 @@
+--1
+create table Clients(
+   Id int not null primary key identity,
+   FirstName nvarchar(30) not null,
+   LastName nvarchar(30) not null,
+   Gender char(1) check(Gender in ('M', 'F')),
+   BirthDate datetime,
+   CreditCard nvarchar(30) not null,
+   CardValidity datetime,
+   Email nvarchar(50) not null
+)
+create table Towns (
+      Id int not null primary key identity,
+	  Name nvarchar(50) not null
+)
+create table Offices(
+    Id int not null primary key identity,
+	Name nvarchar(40) not null,
+	ParkingPlaces int,
+	TownId int not null foreign key references Towns(Id)
+)
+create table Models(
+      Id int not null primary key identity,
+	  Manufacturer nvarchar(50) not null,
+	  Model nvarchar(50) not null,
+	  ProductionYear datetime,
+	  Seats int,
+	  Class nvarchar(10),
+	  Consumption decimal(14, 2)
+)
+create table Vehicles(
+         Id int not null primary key identity,
+		 ModelId int not null foreign key references Models(Id),
+		 OfficeId int not null foreign key references Offices(Id),
+		 Mileage int 
+)
+create table Orders(
+    Id int not null primary key identity,
+	ClientId int not null foreign key references Clients(Id),
+	TownId int not null foreign key references Towns(Id),
+	VehicleId int not null foreign key references Vehicles(Id),
+	CollectionDate datetime not null,
+	CollectionOfficeId int not null foreign key references Offices(Id),
+	ReturnDate datetime,
+	ReturnOfficeId int foreign key references Offices(Id),
+	Bill decimal(14,2),
+	TotalMileage int
+)
+
+--2
+INSERT INTO Models(Manufacturer, Model, ProductionYear, Seats, Class, Consumption)
+values
+('Chevrolet',	'Astro',	'2005-07-27 00:00:00.000',	4,	'Economy',	12.60),
+('Toyota',	'Solara',	'2009-10-15 00:00:00.000',	7,	'Family',	13.80),
+('Volvo',	'S40',	    '2010-10-12 00:00:00.000',	3,	'Average',	11.30),
+('Suzuki',	'Swift',	'2000-02-03 00:00:00.000',	7,	'Economy',	16.20)
+
+insert into Orders(ClientId, TownId, VehicleId, CollectionDate, CollectionOfficeId, ReturnDate,ReturnOfficeId, Bill, TotalMileage)
+values
+(17,	2,	52,	'2017-08-08', 	30	,'2017-09-04', 	42,	2360.00, 7434),
+(78,	17,	50,	'2017-04-22', 	10	,'2017-05-09', 	12,	2326.00	,7326),
+(27,	13,	28,	'2017-04-25', 	21	,'2017-05-09', 	34,	597.00,	 1880)
+
+--3
+update Models
+set Class = 'Luxury'
+where Consumption>20
+--4
+deletE from Orders
+where ReturnDate is null
+--5
+select m.Manufacturer, m.Model from Models as m
+order by m.Manufacturer , m.Id desc
+--6
+select FirstName, LastName from Clients
+where year(BirthDate)  between 1977 and 1994
+order by FirstName , LastName, Id 
+--7
+select t.Name, o.Name, o.ParkingPlaces from Offices as o
+join Towns as t on t.Id = o.TownId
+where o.ParkingPlaces>25
+order by t.Name, o.Id
+--8
+select m.Model
+      ,m.Seats
+	  ,v.Mileage
+ from Vehicles as v
+join Models as m on m.Id = v.ModelId
+where v.Id != all(select o.VehicleId from Orders as o where o.ReturnDate is null)
+order by v.Mileage, m.Seats desc, m.Id
+--9
+select t.Name, COUNT(o.Id) as count from Towns as t
+join Offices as o on o.TownId = t.Id
+group by t.Name
+order by count desc, t.Name
+--10
+select m.Manufacturer, m.Model, count(o.Id) as TimeOrders from Models as m
+join Vehicles as v on v.ModelId = m.Id
+full join Orders as o on o.VehicleId = v.Id
+group by m.Manufacturer, m.Model
+order by TimeOrders desc, m.Manufacturer desc, m.Model
+--11
+with cte_Mostfrequence
+as
+(
+     select c.FirstName+' '+c.LastName as [Names], m.Class
+	       ,DENSE_RANK() OVER   
+    (PARTITION BY c.FirstName, c.LastName ORDER BY count(*) DESC) AS Rank  
+	  from Clients as c
+     join Orders as o on o.ClientId = c.Id
+     join Vehicles as v on v.Id = o.VehicleId
+     join Models as m on m.Id = v.ModelId
+     group by c.FirstName,c.LastName, m.Class
+)
+
+select c.Names, c.Class  from cte_Mostfrequence as c
+where c.Rank = 1
+--12
+
+select case 
+        when year(c.BirthDate) between 1970 and 1979 then '70''s'
+		when year(c.BirthDate) between 1980 and 1989 then '80''s'
+		when YEAR(c.BirthDate) between 1990 and 1999 then '90''s'
+		else 'Others'
+		end as [Age group]
+	   ,SUM(o.Bill) as Revenue
+	   ,avg(o.TotalMileage) as [AverageMileage]
+      
+ from Clients as c 
+join Orders as o on c.Id = o.ClientId
+group by case 
+        when year(c.BirthDate) between 1970 and 1979 then '70''s'
+		when year(c.BirthDate) between 1980 and 1989 then '80''s'
+		when YEAR(c.BirthDate) between 1990 and 1999 then '90''s'
+		else 'Others'
+		end
+ --13
+ 
+with cte_mostOrder
+as
+(
+    select top 7 m.Model,
+           AVG(m.Consumption) as [Fuel Consumption] 
+      from Orders as o
+     join Vehicles as v on o.VehicleId = v.Id
+     join Models as m on m.Id = v.ModelId
+    group by m.Model
+    order by COUNT(*) desc
+)
+
+select m.Manufacturer
+      ,mo.[Fuel Consumption] as AverageConsum
+  from cte_mostOrder as mo
+ join Models as m on m.Model = mo.Model
+where mo.[Fuel Consumption] between 5 and 15
+order by m.Manufacturer, mo.[Fuel Consumption]
+--14
+with cte_OrderPeople
+as
+(
+   select c.Id
+         ,c.FirstName
+         ,c.LastName
+		 ,c.Email
+		 ,o.Bill
+		 ,t.Name as [Town]
+		 ,RANK() OVER(PARTITION BY t.Name  ORDER BY o.Bill DESC) AS [Rank] 
+	 from Clients as c
+   inner join Orders as o on o.ClientId = c.Id
+   inner join Towns as t on t.Id = o.TownId
+   where c.CardValidity < o.CollectionDate and o.Bill is not null
+)
+select op.FirstName+' '+op.LastName as [Category Name],
+       op.Email,
+	   op.Bill,
+	   op.Town
+ from cte_OrderPeople as op
+ where op.Rank in (1, 2)
+ order by 
+       op.Town, 
+       op.Bill, 
+	   op.Id
+--15
+with cte_MaleCount
+as
+(
+     select t.Id as [TownCont]
+           ,t.[Name] as [TownName]
+      	  ,COUNT(*) as  [MaleCount]
+      from Clients as c
+      join Orders as o on o.ClientId = c.Id
+      join Towns as t on t.Id = o.TownId
+      where c.Gender = 'M'
+      group by t.Name, t.Id
+
+),
+cte_FemaleCount
+as
+(
+     select t.Id as [TownCont]
+           ,t.[Name] as [TownName]
+      	  ,COUNT(*) as  [FemaleCount]
+      from Clients as c
+      join Orders as o on o.ClientId = c.Id
+      join Towns as t on t.Id = o.TownId
+      where c.Gender = 'F'
+      group by t.Name, t.Id
+)
+
+select t.Name
+      ,cast(cteM.MaleCount*100/(isnull(cteM.MaleCount, 0)+ISNULL(cteF.FemaleCount,0))as int) as [MalePercentage]    --malePercentage
+      ,cast(cteF.FemaleCount*100/(isnull(cteM.MaleCount, 0)+ISNULL(cteF.FemaleCount,0))as int) as [MalePercentage]    --malePercentage
+ from Towns as t
+left join cte_FemaleCount as cteF on t.Name = cteF.TownName
+left join cte_MaleCount as cteM on t.Name = cteM.TownName
+order by t.Name,
+         t.Id desc
+--16
+create function udf_CheckForVehicle(@townName nvarchar(max), @seatsNumber int)
+returns nvarchar(max) 
+as
+  begin
+    declare @temporal nvarchar(max)
+	set @temporal =
+	 (
+	    select top 1 o.Name+' - '+m.Model		      
+		 from Towns as t
+		join Offices as o on o.TownId = t.Id
+		join Vehicles as v on v.OfficeId = o.Id
+		join Models as m on m.Id = v.ModelId
+		where t.Name = @townName and m.Seats = @seatsNumber
+		order by o.Name)
+		if(@temporal is null)
+		begin
+		    return 'NO SUCH VEHICLE FOUND'
+		end
+		return @temporal
+  end
+--17
+create proc  usp_MoveVehicle(@vehicleId int, @officeId int) 
+as
+begin
+   declare @tempVehicle int
+   set @tempVehicle = 
+   (
+        select COUNT(v.Id) from Vehicles as v
+		where v.OfficeId = @officeId
+   )
+   declare @temporalOffice int
+   set @temporalOffice = 
+   (
+       select o.ParkingPlaces from Offices as o
+	   where o.Id = @officeId
+   )
+   begin transaction
+   update Vehicles
+   set OfficeId = @officeId
+   where Id = @vehicleId
+
+   if(@tempVehicle>= @temporalOffice)
+   begin
+     raiserror('Not enough room in this office!', 16, 1)
+     rollback
+	 return
+   end
+   commit
+end
+--18
+create trigger tr_AddTotalMile
+on Orders after Update
+as
+   begin
+       declare @NewMile int
+	   set @NewMile = (select i.TotalMileage from inserted as i)
+	   declare @VehicleId int
+	   set @VehicleId = (select i.VehicleId from inserted as i)
+	   declare @oldMile int
+	   set @oldMile = (select d.TotalMileage from deleted as d)
+
+	   if(@oldMile is null)
+	   begin
+	      update Vehicles
+		  set Mileage += @NewMile
+		  where Id = @VehicleId
+	   end
+   end
+
+
+
+ 
+
