@@ -1,3 +1,4 @@
+t1
 create table Cities(
   Id int not null identity primary key,
   [Name] nvarchar(20) not null,
