@@ -1,0 +1,151 @@
+create table Cities(
+  Id int not null identity primary key,
+  [Name] nvarchar(20) not null,
+  [CountryCode] char(2) not null
+)
+
+create table Hotels(
+  Id int not null identity primary key,
+  [Name] nvarchar(30) not null,
+  CityId int foreign key references Cities(Id),
+  EmployeeCount int not null,
+  BaseRate decimal(15, 2)
+)
+
+create table Rooms(
+  Id int not null identity primary key,
+  Price decimal(15, 2) not null,
+  [Type] nvarchar(20) not null,
+  Beds int not null,
+  HotelId int foreign key references Hotels(Id) not null
+)
+
+create table Trips(
+   Id int not null identity primary key,
+   RoomId int foreign key references Rooms(Id) not null,
+   BookDate date not null,
+   ArrivalDate date not null,
+   ReturnDate date not null,
+   CancelDate date,
+   constraint CH_BookDate check(BookDate<ArrivalDate),
+   constraint CH_ArrivalDate1 check(ArrivalDate<ReturnDate)
+
+)
+
+
+create table Accounts(
+  Id int not null identity primary key,
+  FirstName nvarchar(50) not null,
+  MiddleName nvarchar(20),
+  LastName nvarchar(50) not null,
+  CityId int foreign key references Cities(Id) not null,
+  BirthDate date not null,
+  Email varchar(100) not null unique
+
+
+)
+
+create table AccountsTrips(
+    AccountId int foreign key references Accounts(Id),
+	TripId int foreign key references Trips(Id),
+	Luggage int check(Luggage>=0),
+	primary key (AccountId, TripId)
+)
+
+
+
+alter table Trips
+add constraint CH_BookDate1 check(BookDate<ArrivalDate)
+
+alter table Trips
+add constraint CH_ArrivalDate1 check(ArrivalDate<ReturnDate)
+
+insert into Accounts (FirstName, MiddleName, LastName, CityId, BirthDate, Email)
+values
+('John',	'Smith',	'Smith',	34,	'1975-07-21',	'j_smith@gmail.com'),
+('Gosho',	NULL	,'Petrov',	11	,'1978-05-16',	'g_petrov@gmail.com'),
+('Ivan',	'Petrovich',	'Pavlov',	59,	'1849-09-26',	'i_pavlov@softuni.bg'),
+('Friedrich',	'Wilhelm',	'Nietzsche',	2,	'1844-10-15',	'f_nietzsche@softuni.bg')
+
+
+insert into Trips (RoomId, BookDate, ArrivalDate, ReturnDate, CancelDate) values
+('101',	'2015-04-12', '2015-04-14','2015-04-20','2015-02-02'),
+('102',	'2015-07-07', '2015-07-15','2015-07-22','2015-04-29'),
+('103',	'2013-07-17', '2013-07-23','2013-07-24',NULL),
+('104',	'2012-03-17', '2012-03-31','2012-04-01','2012-01-10'),
+('109',	'2017-08-07', '2017-08-28','2017-08-29',NULL)
+
+
+update Rooms
+set Price *=1.14
+where HotelId in (5, 7, 9)
+
+
+delete from AccountsTrips
+where AccountId = 47
+
+
+
+select c.Id, Name from Cities as c
+where c.CountryCode = 'BG'
+order by c.Name
+
+
+select a.FirstName, a.LastName, convert(char(10), a.BirthDate, 110), c.Name, a.Email from Accounts as a
+join Cities as c on c.Id = a.CityId
+where a.Email like 'e%'
+order by c.Name desc
+
+
+
+select c.Name,ISNULL( COUNT(h.Name), 0) as [Hotel]from Hotels as h
+full join Cities as c on h.CityId = c.Id
+group by c.Name
+order by Hotel desc, c.Name
+
+
+select distinct r.Id, r.Price, h.Name, c.Name from Rooms as r
+join Hotels as h on h.Id = r.HotelId
+join Cities as c on h.CityId = c.Id
+where r.Type like 'first class'
+order by r.Price desc, r.Id
+
+
+select * from Accounts as a 
+join AccountsTrips as acct on acct.AccountId = a.Id
+join Trips as t on acct.TripId = t.Id
+
+
+
+select top 5 c.Id, c.Name, c.CountryCode, COUNT(a.Id) as Accounts from Cities as c
+join Accounts as a on a.CityId = c.Id
+group by c.Id, c.Name, c.CountryCode
+order by Accounts desc
+
+
+
+
+
+create trigger T_Cancel_Trip
+on Trips
+instead of delete
+as
+  begin
+     update Trips
+	 set CancelDate = GETDATE()
+	 where Id in (
+	           select Id from deleted
+			   where CancelDate is null 
+	 )
+  end
+
+
+
+
+
+
+
+
+
+
+
