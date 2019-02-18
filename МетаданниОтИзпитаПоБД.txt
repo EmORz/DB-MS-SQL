@@ -1,0 +1,564 @@
+insert into Teachers
+values
+('Ruthanne',	'Bamb',	'84948 Mesta Junction',	'3105500146',	6),
+('Gerrard',	'Lowin',	'370 Talisman Plaza',	'3324874824',	2),
+('Merrile',	'Lambdin',	'81 Dahle Plaza',	'4373065154',	5),
+('Bert',	'Ivie',	'2 Gateway Circle',	'4409584510',	4)
+
+insert into Subjects
+values
+('Geometry',	12),
+('Health',	10),
+('Drama',	7),
+('Sports',	9)
+
+
+
+update StudentsSubjects
+set Grade = 6
+where SubjectId in(1,2) and Grade >5.50
+update StudentsSubjects
+set Grade = 6
+where SubjectId in(1,2) and Grade >=5.50
+where Phone like '%72%'
+select t.Phone from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%'
+update StudentsSubjects
+set Grade = 6
+where SubjectId in(1, 2) and Grade >=5.50
+select st.TeacherId from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%'
+where Id in (select st.TeacherId from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%')
+delete from StudentsTeachers
+where TeacherId in (select st.TeacherId from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%')
+
+
+
+delete from Teachers
+where Phone like '%72%'
+update StudentsSubjects
+set Grade = 6
+where SubjectId in(1, 2) and Grade >=5.50
+5. Teen Students
+5. Teen Students
+Select all students who are teenagers (their age is above or equal to 12). Order them by first name (alphabetically), then by last name (alphabetically). Select their first name, last name and their age.
+Example
+FirstName	LastName	Age
+Agace	Sneddon	12
+Andres	Colliard	12
+Brose	Yeats	13
+Casper	Tite	12
+…	…	…
+
+select s.FirstName, s.LastName, s.Age from Students as s
+where s.Age >=12
+order by s.FirstName, s.LastName
+6. Cool Addresses
+Select all full names from students, whose address text contains ‘road’.
+Order them by first name (alphabetically), then by last name (alphabetically), then by address text (alphabetically).
+Example
+Full Name	Address
+Clywd Jon Dyett	1513 Lien Road
+Garnet Lax De Cleyne	91 Maple Road
+Harland Trelevan Samber	89863 Leroy Road
+Lock Kenford Houlaghan	3 Hovde Road
+…	…
+
+
+select CONCAT(s.FirstName, ' ', ISNULL(s.MiddleName+' ', ''), s.LastName) as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+select CONCAT(s.FirstName, ' ', ISNULL(s.MiddleName+' ', ''), s.LastName) as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+
+delete from StudentsTeachers
+where TeacherId in (select st.TeacherId from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%')
+
+
+
+delete from Teachers
+where Phone like '%72%'
+7. 42 Phones
+Select students with middle names whose phones starts with 42. Select their first name, address and phone number. Order them by first name alphabetically.
+Example
+FirstName	Address	Phone
+Chloe	520 Sauthoff Pass	4216471468
+Freddie	5 Basil Junction	4205378077
+…	…	…
+
+and s.Phone like '42%'
+select s.FirstName, s.Address, s.Phone from Students as s
+where s.MiddleName is null and s.Phone like '42%'
+order by s.FirstName
+8. Students Teachers
+Select all students and the count of teachers each one has. 
+Example
+FirstName	LastName	TeachersCount
+Sandy	Abbison	10
+Baxter	Abrahart	13
+Demott	Addison	13
+Deane	Adess	10
+…	…	...
+
+s.FirstName, s.LastName
+select s.FirstName, s.LastName, COUNT(st.TeacherId) as TeacherCount from Students as s
+join StudentsTeachers as st on st.StudentId = s.Id
+join Teachers as t on t.Id = st.TeacherId
+group by s.FirstName, s.LastName
+9. Subjects with Students
+Select all teachers’ full names and the subjects they teach with the count of lessons in each. Finally select the count of students each teacher has. Order them by students count descending.
+Example
+FullName	Subjects	Students
+Rona Wollard	Physics-12	90
+Salvador Depport	French-15	90
+Ruthanne Bamb	Biology-12	90
+Merrile Lambdin	English-7	90
+Ezechiel Dalinder	Poetry-10	80
+…	…	…
+
+t.FirstName+' '+t.LastName
+select s.FirstName+ ' '+ISNULL(s.MiddleName, '')+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+
+select s.FirstName, s.MiddleName, s.Address, s.Phone from Students as s
+where s.Phone like '42%' and s.MiddleName is not null
+order by s.FirstName
+
+select s.FirstName+ ' '+ISNULL(s.MiddleName, '')+' '+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+select s.FirstName, s.Address, s.Phone from Students as s
+where s.Phone like '42%' and s.MiddleName is not null
+order by s.FirstName
+, who have not attended an exam
+10. Students to Go
+Find all students, who have not attended an exam. Select their full name (first name + last name).
+Order the results by full name (ascending).
+Example
+
+11. Busiest Teachers
+Find top 10 teachers with most students they teach. Select their first name, last name and the amount of students they have. Order them by students count (descending), then by first name (ascending), then by last name (ascending).
+Example
+FirstName	LastName	StudentsCount
+Merrile	Lambdin	90
+Rona	Wollard	90
+Ruthanne	Bamb	90
+…	…	
+
+t.FirstName, t.FirstName
+select t.FirstName, t.FirstName, COUNT(*) as StudentsCount from Teachers as t
+Join StudentsTeachers as st on st.TeacherId = t.Id
+group by t.FirstName, t.LastName
+order by StudentsCount desc, t.FirstName, t.LastName
+select t.FirstName, t.LastName, COUNT(*) as StudentsCount from Teachers as t
+Join StudentsTeachers as st on st.TeacherId = t.Id
+group by t.FirstName, t.LastName
+order by StudentsCount desc, t.FirstName, t.LastName
+12. Top Students
+Find top 10 students, who have highest average grades from the exams.
+Format the grade, two symbols after the decimal point.
+Order them by grade (descending), then by first name (ascending), then by last name (ascending)
+Example
+First Name	Last Name	Grade
+Lurlene	Orgee	6.00
+Ivy	Bilovsky	5.70
+Chariot	Giacobbo	5.50
+…	…	
+
+st.FirstName, st.LastName
+select top 10 t.FirstName, t.LastName, COUNT(*) as StudentsCount from Teachers as t
+Join StudentsTeachers as st on st.TeacherId = t.Id
+group by t.FirstName, t.LastName
+order by StudentsCount desc, t.FirstName, t.LastName
+13. Second Highest Grade
+Find the second highest grade per student from all subjects. Sort them by first name (ascending), then by last name (ascending).
+Example
+FirstName	LastName	Grade
+Agace	Sneddon	5.99
+Anderea	Bowers	5.99
+Andres	Colliard	5.99
+Barbe	Sterrie	5.75
+Baxter	Abrahart	5.99
+…	…	…
+
+select top 10 st.FirstName, st.LastName, format(AVG(se.Grade), 'N2') as Grade from Students as st
+join StudentsExams as se on se.StudentId = st.Id
+group by st.FirstName, st.LastName
+order by Grade desc, st.FirstName, st.LastName
+DENSE_RANK() OVER   
+    (PARTITION BY c.CountryCode ORDER BY count(*) DESC, a.Id) AS Rank
+select s.FirstName+' '+isnull(s.MiddleName, '')+ ' '+s.LastName  as [FullName]from Students as s
+full join StudentsSubjects as ss on ss.StudentId = s.Id
+full join Subjects as sub on sub.Id = ss.SubjectId
+where sub.Id is null
+order by FullName
+select s.FirstName+' '+isnull(s.MiddleName+' ', '')+s.LastName  as [FullName]from Students as s
+full join StudentsSubjects as ss on ss.StudentId = s.Id
+full join Subjects as sub on sub.Id = ss.SubjectId
+where sub.Id is null
+order by FullName
+select s.FirstName+ ' '+ISNULL(s.MiddleName+' ', '')+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+15. Top Student per Teacher
+Find all teachers with their top students. The top student is the person with highest average grade. Select teacher full name (first name + last name), subject name, student full name (first name + last name) and corresponding grade. The grade must be formatted to the second digit after the decimal point.
+Sort the results by subject name (ascending), then by teacher full name (ascending), then by grade (descending)
+Example
+Teacher Full Name	Subject Name	Student Full Name	Grade
+Farleigh Gerrans	Art	Horatia Kenforth	5.50
+Findlay Collingdon	Art	Zackariah Cordner	5.27
+Ruthanne Bamb	Biology	Merrill Habbijam	5.75
+…	…	…	…
+
+1. Top Student per Teacher
+Find all teachers with their top students. The top student is the person with highest average grade. Select teacher full name (first name + last name), subject name, student full name (first name + last name) and corresponding grade. The grade must be formatted to the second digit after the decimal point.
+Sort the results by subject name (ascending), then by teacher full name (ascending), then by grade (descending)
+Example
+Teacher Full Name	Subject Name	Student Full Name	Grade
+Farleigh Gerrans	Art	Horatia Kenforth	5.50
+Findlay Collingdon	Art	Zackariah Cordner	5.27
+Ruthanne Bamb	Biology	Merrill Habbijam	5.75
+…	…	…	…
+
+16. Average Grade per Subject
+Find the average grade for each subject. Select the subject name and the average grade. 
+Sort them by subject id (ascending).
+Example
+Name	AverageGrade
+Biology	4.059055
+History	3.880370
+English	4.060546
+Math	3.957876
+Music	3.923984
+Art	4.070898
+…	…
+
+select s.Name
+      ,AVG(ss.Grade) as AverageGrade
+ from Subjects as s
+join StudentsSubjects as ss on ss.SubjectId = s.Id
+group by s.Name, s.Id
+order by s.Id
+select s.FirstName+ ' '+ISNULL(s.MiddleName+' ', '')+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+select s.FirstName+ ' '+ISNULL(s.MiddleName, '')+ ' '+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+ DATEPART(QUARTER,)
+select concat('Q',DATEPART(QUARTER, e.Date)) as Quater, sub.Name, COUNT(sub.Id) from Exams as e
+join StudentsExams as se on se.ExamId = e.Id
+join Students as s on s.Id = se.StudentId
+join StudentsSubjects as ss on ss.StudentId = s.Id
+join Subjects as sub on sub.Id = ss.SubjectId
+where se.Grade > 4.00
+group by sub.Name, e.Date
+order by Quater
+ExcludedStudents
+StudentId, StudentName
+on Students
+
+ExcludedStudents
+DELETE FROM StudentsExams
+WHERE StudentId = 1
+
+DELETE FROM StudentsTeachers
+WHERE StudentId = 1
+
+DELETE FROM StudentsSubjects
+WHERE StudentId = 1
+
+DELETE FROM Students
+WHERE Id = 1
+
+SELECT * FROM ExcludedStudents
+
+create trigger tr_SudentsName on Students
+instead of delete
+as
+  insert into ExcludedStudents(StudentId, StudentName)
+  select Id, FirstName from deleted
+
+
+create trigger tr_SudentsName on Students
+instead of delete
+as
+  insert into ExcludedStudents(StudentId, StudentName)
+  select Id, FirstName+' '+LastName from deleted
+
+
+insert into Teachers
+values
+('Ruthanne',	'Bamb',	'84948 Mesta Junction',	'3105500146',	6),
+('Gerrard',	'Lowin',	'370 Talisman Plaza',	'3324874824',	2),
+('Merrile',	'Lambdin',	'81 Dahle Plaza',	'4373065154',	5),
+('Bert',	'Ivie',	'2 Gateway Circle',	'4409584510',	4)
+
+insert into Subjects
+values
+('Geometry',	12),
+('Health',	10),
+('Drama',	7),
+('Sports',	9)
+
+--update
+update StudentsSubjects
+set Grade = 6
+where SubjectId in(1, 2) and Grade >=5.50
+
+
+--Delete
+delete from StudentsTeachers
+where TeacherId in (select st.TeacherId from StudentsTeachers as st
+join Teachers as t on t.Id = st.TeacherId
+where t.Phone like '%72%')
+
+
+
+delete from Teachers
+where Phone like '%72%'
+
+--select st.TeacherId from StudentsTeachers as st
+--join Teachers as t on t.Id = st.TeacherId
+--where t.Phone like '%72%'
+
+--select * from Teachers
+
+--5. Teen Students
+--5. Teen Students
+--Select all students who are teenagers (their age is above or equal to 12). Order them by first name (alphabetically), then by last name (alphabetically). Select their first name, last name and their age.
+--Example
+--FirstName	LastName	Age
+--Agace	Sneddon	12
+--Andres	Colliard	12
+--Brose	Yeats	13
+--Casper	Tite	12
+--…	…	…
+
+select s.FirstName, s.LastName, s.Age from Students as s
+where s.Age >=12
+order by s.FirstName, s.LastName
+
+--6. Cool Addresses
+--Select all full names from students, whose address text contains ‘road’.
+--Order them by first name (alphabetically), then by last name (alphabetically), then by address text (alphabetically).
+--Example
+--Full Name	Address
+--Clywd Jon Dyett	1513 Lien Road
+--Garnet Lax De Cleyne	91 Maple Road
+--Harland Trelevan Samber	89863 Leroy Road
+--Lock Kenford Houlaghan	3 Hovde Road
+
+select s.FirstName+ ' '+ISNULL(s.MiddleName+' ', '')+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+
+--7. 42 Phones
+--Select students with middle names whose phones starts with 42. Select their first name, address and phone number. Order them by first name alphabetically.
+--Example
+--FirstName	Address	Phone
+--Chloe	520 Sauthoff Pass	4216471468
+--Freddie	5 Basil Junction	4205378077
+--…	…	…
+
+select s.FirstName, s.Address, s.Phone from Students as s
+where s.Phone like '42%' and s.MiddleName is not null
+order by s.FirstName
+
+
+select * from Students
+where MiddleName is null and Phone like '%42%'
+
+
+--
+--8. Students Teachers
+--Select all students and the count of teachers each one has. 
+--Example
+--FirstName	LastName	TeachersCount
+--Sandy	Abbison	10
+--Baxter	Abrahart	13
+--Demott	Addison	13
+--Deane	Adess	10
+--…	…	...
+
+select s.FirstName, s.LastName, COUNT(st.TeacherId) as TeacherCount from Students as s
+join StudentsTeachers as st on st.StudentId = s.Id
+join Teachers as t on t.Id = st.TeacherId
+group by s.FirstName, s.LastName
+
+--
+--9. Subjects with Students
+--Select all teachers’ full names and the subjects they teach with the count of lessons in each. Finally select the count of students each teacher has. Order them by students count descending.
+--Example
+--FullName	Subjects	Students
+--Rona Wollard	Physics-12	90
+--Salvador Depport	French-15	90
+--Ruthanne Bamb	Biology-12	90
+--Merrile Lambdin	English-7	90
+--Ezechiel Dalinder	Poetry-10	80
+--…	…	…
+
+select t.FirstName+' '+t.LastName as FullName,
+       s.Name,COUNT(ss.SubjectId),
+	   COUNT(ss.StudentId)  
+  from Teachers as t
+join Subjects as s on s.Id = t.SubjectId
+join StudentsSubjects as ss on ss.SubjectId = s.Id
+group by t.FirstName,t.LastName, s.Name
+
+---
+
+--10. Students to Go
+--Find all students, who have not attended an exam. Select their full name (first name + last name).
+--Order the results by full name (ascending).
+--Example
+
+
+select * from Students as s
+join StudentsExams as se on se.StudentId = s.Id
+join Exams as e on e.Id = se.ExamId
+where se.StudentId is null
+
+--
+--11. Busiest Teachers
+--Find top 10 teachers with most students they teach. Select their first name, last name and the amount of students they have. Order them by students count (descending), then by first name (ascending), then by last name (ascending).
+--Example
+--FirstName	LastName	StudentsCount
+--Merrile	Lambdin	90
+--Rona	Wollard	90
+--Ruthanne	Bamb	90
+--…	…	
+select top 10 t.FirstName, t.LastName, COUNT(*) as StudentsCount from Teachers as t
+Join StudentsTeachers as st on st.TeacherId = t.Id
+group by t.FirstName, t.LastName
+order by StudentsCount desc, t.FirstName, t.LastName
+--
+--12. Top Students
+--Find top 10 students, who have highest average grades from the exams.
+--Format the grade, two symbols after the decimal point.
+--Order them by grade (descending), then by first name (ascending), then by last name (ascending)
+--Example
+--First Name	Last Name	Grade
+--Lurlene	Orgee	6.00
+--Ivy	Bilovsky	5.70
+--Chariot	Giacobbo	5.50
+--…	…	
+select top 10 st.FirstName, st.LastName, format(AVG(se.Grade), 'N2') as Grade from Students as st
+join StudentsExams as se on se.StudentId = st.Id
+group by st.FirstName, st.LastName
+order by Grade desc, st.FirstName, st.LastName
+
+
+--13. Second Highest Grade
+--Find the second highest grade per student from all subjects. Sort them by first name (ascending), then by last name (ascending).
+--Example
+--FirstName	LastName	Grade
+--Agace	Sneddon	5.99
+--Anderea	Bowers	5.99
+--Andres	Colliard	5.99
+--Barbe	Sterrie	5.75
+--Baxter	Abrahart	5.99
+--…	…	…
+
+select top 10 st.FirstName, st.LastName, format(AVG(se.Grade), 'N2') as Grade, 
+              DENSE_RANK() OVER   
+    (PARTITION BY Grade ORDER BY st.FirstName DESC) AS Ranks
+ from Students as st
+join StudentsExams as se on se.StudentId = st.Id
+group by st.FirstName, st.LastName
+order by Grade desc, st.FirstName, st.LastName
+--
+
+select s.FirstName+' '+isnull(s.MiddleName+' ', '')+s.LastName  as [FullName]from Students as s
+full join StudentsSubjects as ss on ss.StudentId = s.Id
+full join Subjects as sub on sub.Id = ss.SubjectId
+where sub.Id is null
+order by FullName
+---
+
+--15. Top Student per Teacher
+--Find all teachers with their top students. The top student is the person with highest average grade. Select teacher full name (first name + last name), subject name, student full name (first name + last name) and corresponding grade. The grade must be formatted to the second digit after the decimal point.
+--Sort the results by subject name (ascending), then by teacher full name (ascending), then by grade (descending)
+--Example
+--Teacher Full Name	Subject Name	Student Full Name	Grade
+--Farleigh Gerrans	Art	Horatia Kenforth	5.50
+--Findlay Collingdon	Art	Zackariah Cordner	5.27
+--Ruthanne Bamb	Biology	Merrill Habbijam	5.75
+--…	…	…	…
+
+
+--16. Average Grade per Subject
+--Find the average grade for each subject. Select the subject name and the average grade. 
+--Sort them by subject id (ascending).
+--Example
+--Name	AverageGrade
+--Biology	4.059055
+--History	3.880370
+--English	4.060546
+--Math	3.957876
+--Music	3.923984
+--Art	4.070898
+--…	…
+
+select s.Name
+      ,AVG(ss.Grade) as AverageGrade
+ from Subjects as s
+join StudentsSubjects as ss on ss.SubjectId = s.Id
+group by s.Name, s.Id
+order by s.Id
+
+
+select s.FirstName+ ' '+ISNULL(s.MiddleName, '')+ ' '+s.LastName as [FullName], s.Address from Students as s
+where s.Address like '%road%'
+order by s.FirstName, s.LastName, s.Address
+---
+select concat('Q',DATEPART(QUARTER, e.Date)) as Quater, sub.Name, COUNT(sub.Id) from Exams as e
+join StudentsExams as se on se.ExamId = e.Id
+join Students as s on s.Id = se.StudentId
+join StudentsSubjects as ss on ss.StudentId = s.Id
+join Subjects as sub on sub.Id = ss.SubjectId
+where se.Grade > 4.00
+group by sub.Name, e.Date
+order by Quater
+
+
+---
+--create table ExcludedStudents(StudentId int , StudentName varchar(max)) 
+
+create trigger tr_SudentsName on Students
+instead of delete
+as
+  insert into ExcludedStudents(StudentId, StudentName)
+  select Id, FirstName+' '+LastName from deleted
+
+
+  DELETE FROM StudentsExams
+WHERE StudentId = 1
+
+DELETE FROM StudentsTeachers
+WHERE StudentId = 1
+
+DELETE FROM StudentsSubjects
+WHERE StudentId = 1
+
+DELETE FROM Students
+WHERE Id = 1
+
+SELECT * FROM ExcludedStudents
+
+
+
+
+
+
+
+
